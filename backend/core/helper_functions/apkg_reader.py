@@ -161,7 +161,7 @@ with APKGReader('./core23.apkg') as reader:
 
         # Print the results
         # print(card)
-        print(note)
+        # print(note)
         # print(deck)
         # print(related_cards)
         # print(deck_cards)
