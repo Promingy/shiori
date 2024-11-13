@@ -1,44 +1,36 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Profile(models.Model):
-    user        = models.OneToOneField("app.Model", on_delete=models.CASCADE)
-    first_name  = models.CharField(max_length=100)
-    last_name   = models.CharField(max_length=100)
-    email       = models.CharField(max_length=100)
-    is_activated   = models.BooleanField(default=False)
+    user         = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_activated = models.BooleanField(default=False)
 
-
-# class Book(models.Model):
-#     title            = models.CharField(max_length=100)
-#     author           = models.CharField(max_length=100)
-#     publication_date = models.DateField()
-
-
-class Decks(models.Model):
-    profile     = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="decks")
+class Deck(models.Model):
     name        = models.CharField(max_length=100)
+    deck_id     = models.IntegerField()
     description = models.TextField(blank=True, null=True)
 
     
-class Notes(models.Model):
-    profile     = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="notes")
+class Note(models.Model):
+    note_id     = models.IntegerField()
+    deck        = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name="note")
     guid        = models.CharField(max_length=100, null=False, blank=False)
     model_id    = models.IntegerField(null=False, blank=False)
     modified    = models.IntegerField(null=False, blank=False)
     fields      = models.TextField()
     tags        = models.TextField(blank=True, null=True)
 
-class Cards(models.Model):
-    profile     = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="cards")
-    note        = models.ForeignKey(Notes, on_delete=models.CASCADE, related_name="cards")
-    deck        = models.ForeignKey(Decks, on_delete=models.CASCADE, related_name="cards")
+class Card(models.Model):
+    card_id     = models.IntegerField()
+    note        = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="card")
+    deck        = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name="card")
     order       = models.IntegerField()
     type        = models.IntegerField()
     queue       = models.IntegerField()
     due         = models.IntegerField()
 
-class Media(models.model):
+class Media(models.Model):
     filename    = models.CharField(max_length=100)
     filetype    = models.CharField(max_length=50)
     file_url    = models.CharField(max_length=255)

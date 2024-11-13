@@ -1,14 +1,62 @@
-import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
+import { useState } from 'react';
+import { StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { useAuthStore } from '@/store/store';
 
-export default function TabOneScreen() {
+export default function SignupScreen() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const { signup, isLoading} = useAuthStore();
+
+  const handleSignup = () => {
+    if (firstName && lastName && email && password) {
+      // Call signup function from auth store
+      signup(firstName, lastName, email, password);
+
+      // Reset fields after successful signup
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPassword('');
+    } else {
+      Alert.alert('Error', 'Please fill out all fields');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>Sign Up</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="First Name"
+        value={firstName}
+        onChangeText={setFirstName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Last Name"
+        value={lastName}
+        onChangeText={setLastName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <Button title={isLoading ? 'Signing Up...' : 'Sign Up'} onPress={handleSignup} />
     </View>
   );
 }
@@ -18,14 +66,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 20,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    width: '100%',
+    paddingHorizontal: 8,
+    marginBottom: 10,
   },
 });

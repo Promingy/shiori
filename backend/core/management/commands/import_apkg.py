@@ -1,14 +1,15 @@
 from django.core.management.base import BaseCommand
 from core.models import Deck, Note, Card
 from core.helper_functions.apkg_reader import APKGReader
+import os
+from django.conf import settings
 
 class Command(BaseCommand):
     help = 'Import an APKG file into the database'
 
 
     def handle(self, *args, **kwargs):
-        apkg_path = "../../helper_functions/core23.apkg"
-
+        apkg_path = os.path.join(settings.BASE_DIR, 'core', 'helper_functions', 'core23.apkg')
         # Read the APKG file using APKGReader
         with APKGReader(apkg_path) as reader:
             # Process Decks
@@ -29,10 +30,13 @@ class Command(BaseCommand):
                         deck=deck
                     )
 
-                    for card_id, card_data in reader.get_cards_for_note(note_id):
+                    cards_for_note = reader.get_cards_for_note(note_id)
+
+                    for card_data in cards_for_note:
                         Card.objects.create(
                             note=note,
                             deck=deck,
+                            card_id=card_data['id'],
                             order=card_data['order'],
                             type=card_data['type'],
                             queue=card_data['queue'],
@@ -40,5 +44,3 @@ class Command(BaseCommand):
                         )
                         
         self.stdout.write(self.style.SUCCESS('Successfully imported APKG file'))
-
-
