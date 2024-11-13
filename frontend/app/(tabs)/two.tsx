@@ -4,6 +4,12 @@ import { useAuthStore } from '@/store/store';
 import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
+import AudioPlayer from '@/components/AudioPlayer';
+
+const extractFileName = (field: string) => {
+  const match = field.match(/\[sound:(.+?\.\w+)\]/);
+    return match ? match[1] : '';
+}
 
 export default function TabTwoScreen() {
   const { randomCard, getRandomCard } = useAuthStore();
@@ -15,6 +21,9 @@ export default function TabTwoScreen() {
   const [description, setDescription] = useState('');
   const [sentenceJP, setSentenceJP] = useState('');
   const [sentenceEN, setSentenceEN] = useState('');
+  const [wordSoundFile, setWordSoundFile] = useState('');
+  const [sentenceSoundFile, setSentenceSoundFile] = useState('');
+
 
   useEffect(() => {
     // Fetch the first random card when the component mounts
@@ -30,6 +39,8 @@ export default function TabTwoScreen() {
         setDescription(cleanedFields[2] || '');
         setSentenceJP(cleanedFields[3] || '');
         setSentenceEN(cleanedFields[4] || '');
+        setWordSoundFile(extractFileName(cleanedFields[6]) || '');
+        setSentenceSoundFile(extractFileName(cleanedFields[7]) || '');
     }
   }, [randomCard]); // Ensure this runs when randomCard changes
 
@@ -57,6 +68,8 @@ export default function TabTwoScreen() {
     };
   });
 
+  console.log("word", wordSoundFile,"sentence", sentenceSoundFile);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Random Card</Text>
@@ -77,9 +90,14 @@ export default function TabTwoScreen() {
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
                   <Text style={styles.cardDescription}>{description}</Text>
                   <Text style={styles.cardSentenceJPContainer}>
-                    <RenderHTML defaultTextProps={{ style: styles.cardSentenceJP }} contentWidth={300} source={{ html: sentenceJP }} />
+                    <RenderHTML tagsStyles={{ p: styles.cardSentenceJP, b: {fontWeight: "400"} }} contentWidth={300} source={{ html: `<p>${sentenceJP}</p>` }} />
                   </Text>
                   <Text style={styles.cardSentenceEN}>{sentenceEN}</Text>
+                  <View style={styles.divider} />
+                  <View style={styles.audioContainer}>
+                    <AudioPlayer fileName={wordSoundFile}/>
+                    <AudioPlayer fileName={sentenceSoundFile}/>
+                    </View>
                 </View>
               )}
             </>
@@ -92,7 +110,7 @@ export default function TabTwoScreen() {
       </TouchableOpacity>
   
       {/* Button to fetch a new random card */}
-      <Button title="Get Another Random Card" onPress={getRandomCard} />
+      <Button title="Get Another Random Card" onPress={() => {getRandomCard(); setFlipped(false)}} />
     </View>
   );
   
@@ -136,7 +154,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 50,
-    fontWeight: 'bold',
+    fontWeight: 300,
   },
   divider: {
     height: 1,
@@ -159,13 +177,22 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   cardSentenceJP: {
-    fontSize: 20,
+    fontSize: 25,
     color: '#333',
-    fontStyle: 'italic',
+    fontWeight: 200,
+  },
+  boldText: {
+    fontWeight: 300,
   },
   cardSentenceEN: {
     fontSize:20,
     color: '#333',
     marginVertical: 5,
+  },
+  audioContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    gap: 20,
   },
 });
