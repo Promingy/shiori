@@ -75,8 +75,10 @@ export default function TabTwoScreen() {
                   <Text style={styles.cardTitle}>{title}</Text>
                   <View style={styles.divider} />
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
-                  <Text >{description}</Text>
-                  <RenderHTML contentWidth={300} source={{ html: sentenceJP }} />
+                  <Text style={styles.cardDescription}>{description}</Text>
+                  <Text style={styles.cardSentenceJPContainer}>
+                    <RenderHTML defaultTextProps={{ style: styles.cardSentenceJP }} contentWidth={300} source={{ html: sentenceJP }} />
+                  </Text>
                   <Text style={styles.cardSentenceEN}>{sentenceEN}</Text>
                 </View>
               )}
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
     backfaceVisibility: 'hidden',
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 50,
     fontWeight: 'bold',
   },
   divider: {
@@ -142,19 +144,27 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     width: '100%',
   },
+  cardDescription: {
+    fontSize: 20,
+    color: '#666',
+    marginTop: 10,
+  },
   cardPronunciation: {
-    fontSize: 14,
+    fontSize: 30,
     color: '#666',
     marginVertical: 5,
   },
+  cardSentenceJPContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
+  },
   cardSentenceJP: {
-    fontSize: 14,
+    fontSize: 20,
     color: '#333',
-    marginVertical: 5,
     fontStyle: 'italic',
   },
   cardSentenceEN: {
-    fontSize: 14,
+    fontSize:20,
     color: '#333',
     marginVertical: 5,
   },
