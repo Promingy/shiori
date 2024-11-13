@@ -63,5 +63,4 @@ class RandomCard(APIView):
             "notes": notes_serializer.data
         }
 
-        print('~~~~~~~~~~~~~~~~~~~~', data)
         return Response(data, status=status.HTTP_200_OK)

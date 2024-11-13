@@ -3,6 +3,7 @@ import { StyleSheet, Button, View, TouchableOpacity } from 'react-native';
 import { useAuthStore } from '@/store/store';
 import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
+import RenderHTML from 'react-native-render-html';
 
 export default function TabTwoScreen() {
   const { randomCard, getRandomCard } = useAuthStore();
@@ -63,39 +64,36 @@ export default function TabTwoScreen() {
       {/* Card container with animated flip */}
       <TouchableOpacity onPress={flipCard}>
         <View style={styles.card}>
-            {randomCard ? 
-            <View style={[styles.cardContent, frontAnimatedStyle]}>
-              <>
-                {!flipped ? (
+          {randomCard ? (
+            <>
+              {!flipped ? (
+                <View style={[styles.cardContent, frontAnimatedStyle]}>
                   <Text style={styles.cardTitle}>{title}</Text>
-                ) : (
-                  <Text>Loading...</Text>
-                )}
-              </>
-            </View>
-            :
-            <View style={[styles.cardContent, backAnimatedStyle]}>
-              {/* Back of the card */}
-              {flipped ? (
-                <>
+                </View>
+              ) : (
+                <View style={[styles.cardContent, backAnimatedStyle]}>
                   <Text style={styles.cardTitle}>{title}</Text>
                   <View style={styles.divider} />
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
-                  <Text style={styles.cardSentenceJP}>{sentenceJP}</Text>
+                  <Text >{description}</Text>
+                  <RenderHTML contentWidth={300} source={{ html: sentenceJP }} />
                   <Text style={styles.cardSentenceEN}>{sentenceEN}</Text>
-                </>
-              ) : (
-                <Text>Loading...</Text>
+                </View>
               )}
+            </>
+          ) : (
+            <View style={[styles.cardContent, frontAnimatedStyle]}>
+              <Text>Loading...</Text>
             </View>
-            }
+          )}
         </View>
       </TouchableOpacity>
-
+  
       {/* Button to fetch a new random card */}
       <Button title="Get Another Random Card" onPress={getRandomCard} />
     </View>
   );
+  
 }
 
 const styles = StyleSheet.create({
