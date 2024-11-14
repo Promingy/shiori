@@ -67,7 +67,6 @@ export default function TabTwoScreen() {
     };
   });
 
-  console.log(randomCard)
 
   return (
     <View style={styles.container}>

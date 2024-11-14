@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { AuthState, RequestOptions } from '@/types/Auth';
+import { API } from '@env';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -14,27 +15,48 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     signup: async (first_name, last_name, email, password) => {
         set({isLoading: true, error: null});
 
-        const res = await fetch('http://localhost:8000/api/signup/', {
+        const requestOptions: RequestOptions = {
             method: 'POST',
             headers,
             body: JSON.stringify({first_name, last_name, email, password}),
-        });
-        if (res.ok){
-            const data = await res.json();
-
-            localStorage.setItem('token', data.access)
-            localStorage.setItem('refresh', data.refresh)
-
-            set({user: data.user});
         }
-        set({isLoading: false});
+
+        try {
+            const res = await fetch(`${API}/signup/`, requestOptions);
+
+            if (res.ok){
+                const data = await res.json();
+    
+                localStorage.setItem('token', data.access)
+                localStorage.setItem('refresh', data.refresh)
+    
+                set({user: data.user});
+            }
+        }
+
+        catch (error) {
+            console.error("Error Signing Up:", error);
+        }
+
+        finally {
+            set({isLoading: false});
+        }
+
     },
     logout: async () => {
-        const res = await fetch('http://localhost:8000/api/logout/', {
+        const requestOptions: RequestOptions = {
             method: 'POST',
-        });
-        if (res.ok){
-            set({user: null});
+            headers
+        }
+
+        try {
+            const res = await fetch(`${API}/logout/`, requestOptions);
+
+            if (res.ok) set({user: null});
+        }
+
+        catch (error) {
+            console.error("Error Logging Out:", error);
         }
     },
     getUser: async () => {
@@ -50,46 +72,65 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             },
         }
 
-
         try {
-            const res = await fetch('http://localhost:8000/api/user/', requestOptions);
+            const res = await fetch(`${API}/user/`, requestOptions);
     
-            if (res.ok){
+            if (res.ok) {
                 const data = await res.json();
                 set({user: data});
-            } else if (res.status === 401){
+            } 
+
+            else if (res.status === 401) {
                 get().tokenRefresh();
             }
         } 
 
         catch (error) {
             get().logout;
+            console.error("Error Fetching User, Logging Out:'", error);
         } 
 
-        finally{
+        finally {
             set({isLoading: false});
         }
     },
     tokenRefresh: async () => {
+        set({isLoading: true, error: null});
+
         const refresh = localStorage.getItem('refresh');
         if (!refresh) return;
 
         const requestOptions: RequestOptions = {
-            method: 'GET',
-            headers,
+            method: 'POST',
+            headers: {
+                ...headers, 
+            },
             body: JSON.stringify({refresh}),
         }
-
-        const rest = await fetch('http://localhost:8000/api/token/refresh/', requestOptions);
         
-        if (rest.ok){
-            const data = await rest.json();
-
-            localStorage.setItem('token', data.access)
+        try {
+            const rest = await fetch(`${API}/token/refresh/`, requestOptions);
+    
+            if (rest.ok) {
+                const data = await rest.json();
+    
+                localStorage.setItem('token', data.access)
+                
+                set({user: data.user});
+            } 
             
-            set({user: data.user});
-        } else{
-            get().logout;
+            else {
+                get().logout;
+            }
         }
+
+        catch (error) {
+            console.error("Error Refreshing Token:'", error);
+        }
+
+        finally {
+            set({isLoading: false});
+        }
+
     }
 }))

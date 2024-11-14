@@ -12,6 +12,7 @@ export default function SignupScreen() {
   const { signup, isLoading, user, logout} = useAuthStore();
 
   const handleSignup = () => {
+    
     if (firstName && lastName && email && password) {
       // Call signup function from auth store
       signup(firstName, lastName, email, password);
@@ -21,7 +22,9 @@ export default function SignupScreen() {
       setLastName('');
       setEmail('');
       setPassword('');
-    } else {
+    } 
+    
+    else {
       Alert.alert('Error', 'Please fill out all fields');
     }
   };

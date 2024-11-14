@@ -49,10 +49,8 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { getUser } = useAuthStore();
-  useEffect(() => {
-    console.log('GET USET')
-    getUser();
-  }, [])
+  
+  useEffect(() => { getUser() }, [])
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
