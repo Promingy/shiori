@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Button, View, TouchableOpacity, Image } from 'react-native';
-import { useAuthStore } from '@/store/AuthStore';
 import { useCardStore } from '@/store/FlashCardStore';
 import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
@@ -43,46 +42,28 @@ export default function TabTwoScreen() {
     }
   }, [randomCard]); // Ensure this runs when randomCard changes
 
-  const flipCard = () => {
-    setFlipped(!flipped);
-  };
+  const handleSubmit = (level: string) => {
 
-  const rotateY = useSharedValue(0);
-
-  useEffect(() => {
-    rotateY.value = withSpring(flipped ? 180 : 0);
-  }, [flipped]);
-
-  const frontAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotateY: `${interpolate(rotateY.value, [0, 180], [0, 180])}deg`}],
-      opacity: interpolate(rotateY.value, [0, 90], [1, 0]),
-    };
-  });
-
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotateY: `${interpolate(rotateY.value, [0, 180], [0, 180])}deg`}],
-      opacity: interpolate(rotateY.value, [90, 180], [0, 1]),
-    };
-  });
-
+    getRandomCard('PUT', randomCard?.card.card_id, level)
+    
+    setFlipped(false)
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Random Card</Text>
       
       {/* Card container with animated flip */}
-      <TouchableOpacity onPress={flipCard}>
+      <TouchableOpacity onPress={() => setFlipped(!flipped)}>
         <View style={styles.card}>
           {randomCard ? (
             <>
               {!flipped ? (
-                <View style={[styles.cardContent, frontAnimatedStyle]}>
+                <View style={[styles.cardContent]}>
                   <Text style={styles.cardTitle}>{word}</Text>
                 </View>
               ) : (
-                <View style={[styles.cardContent, backAnimatedStyle]}>
+                <View style={[styles.cardContent]}>
                   <Text style={styles.cardTitle}>{word}</Text>
                   <View style={styles.divider} />
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
@@ -98,12 +79,12 @@ export default function TabTwoScreen() {
                   <View style={styles.audioContainer}>
                     <AudioPlayer fileName={wordSoundFile}/>
                     <AudioPlayer fileName={sentenceSoundFile}/>
-                    </View>
+                  </View>
                 </View>
               )}
             </>
           ) : (
-            <View style={[styles.cardContent, frontAnimatedStyle]}>
+            <View style={[styles.cardContent]}>
               <Text>Loading...</Text>
             </View>
           )}
@@ -116,25 +97,25 @@ export default function TabTwoScreen() {
           color="#D7003A" 
           disabled={!randomCard?.card} 
           title="Again" 
-          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Again"); setFlipped(false)}} 
+          onPress={() => handleSubmit("Again")} 
         />
         <Button 
           color="#E69B00" 
           disabled={!randomCard?.card} 
           title="Hard" 
-          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Hard"); setFlipped(false)}} 
+          onPress={() => handleSubmit("Hard")} 
         />
         <Button 
           color="#6B8E23" 
           disabled={!randomCard?.card} 
           title="Good" 
-          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Good"); setFlipped(false)}} 
+          onPress={() => handleSubmit("Good")} 
         />
         <Button 
           color="#A0C1D1" 
           disabled={!randomCard?.card} 
           title="Easy" 
-          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Easy"); setFlipped(false)}} 
+          onPress={() => handleSubmit("Easy")} 
         />
       </View>
     </View>
@@ -232,7 +213,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     gap: 25
-    // justifyContent: 'space-around',
-    // width: '100%',
   }
 });

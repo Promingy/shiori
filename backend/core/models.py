@@ -33,10 +33,19 @@ class Note(models.Model):
     tags            = models.TextField(blank=True, null=True)
 
 class Card(models.Model):
-    card_id     = models.IntegerField()
-    note        = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="card")
-    deck        = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name="card")
-    order       = models.IntegerField()
-    type        = models.IntegerField()
-    queue       = models.IntegerField()
-    due         = models.IntegerField()
+    card_id         = models.IntegerField()
+    note            = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="card")
+    deck            = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name="card")
+    order           = models.IntegerField()
+    type            = models.IntegerField()
+    queue           = models.IntegerField()
+    due             = models.DateTimeField(blank=True, null=True, db_index=True)  # Indexed for faster due date queries
+    stability       = models.FloatField(default=0.0, null=True, blank=True)  # Nullable for imported cards
+    difficulty      = models.FloatField(default=0.0, null=True, blank=True)  # Nullable for imported cards
+    elapsed_days    = models.IntegerField(default=0, null=True, blank=True)
+    scheduled_days  = models.IntegerField(default=0, null=True, blank=True)
+    reps            = models.IntegerField(default=0, null=True, blank=True)
+    lapses          = models.IntegerField(default=0, null=True, blank=True)
+    state           = models.IntegerField(default=0, null=True, blank=True, db_index=True)  # Nullable and indexed for FSRS state
+    last_review     = models.DateTimeField(blank=True, null=True)
+

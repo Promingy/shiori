@@ -112,15 +112,16 @@ class RandomCard(RetrieveUpdateAPIView):
     
     def put(self, request):
         user = request.user
-        randomCard = self.get(request).data
+        new_card = self.get(request).data
+
+        card_reviewed = Card.objects.filter(card_id=request.data["card_id"])
 
 
+        print('~~~~~~~`', card_reviewed)
         # testCard = fCard()
         # testCard.id = request.data["card_id"]
         # testCard.rating = request.data["rating"]
 
-        # print("~~~~~~~~~~~~~~~~~~~~~~~", testCard)
-
 
         # Test response
-        return Response(randomCard, status=status.HTTP_200_OK)
+        return Response(new_card, status=status.HTTP_200_OK)

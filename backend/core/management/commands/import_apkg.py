@@ -66,7 +66,6 @@ class Command(BaseCommand):
                             order=card_data['order'],
                             type=card_data['type'],
                             queue=card_data['queue'],
-                            due=card_data['due']
                         )
                         
         self.stdout.write(self.style.SUCCESS('Successfully imported APKG file'))
