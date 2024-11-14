@@ -29,7 +29,7 @@ export default function TabTwoScreen() {
   }, []);
 
   useEffect(() => {
-    if (randomCard) { 
+    if (randomCard && randomCard.notes) { 
       const fields = randomCard.notes[0];
 
       setWord( fields.word || '');
@@ -66,7 +66,6 @@ export default function TabTwoScreen() {
       opacity: interpolate(rotateY.value, [90, 180], [0, 1]),
     };
   });
-
 
   return (
     <View style={styles.container}>
@@ -112,10 +111,30 @@ export default function TabTwoScreen() {
   
       {/* Button to fetch a new random card */}
       <View style={styles.buttonContainer}>
-        <Button color="#D7003A" title="Again" onPress={() => {getRandomCard(); setFlipped(false)}} />
-        <Button color="#E69B00" title="Hard" onPress={() => {getRandomCard(); setFlipped(false)}} />
-        <Button color="#6B8E23" title="Good" onPress={() => {getRandomCard(); setFlipped(false)}} />
-        <Button color="#A0C1D1" title="Easy" onPress={() => {getRandomCard(); setFlipped(false)}} />
+        <Button 
+          color="#D7003A" 
+          disabled={!randomCard} 
+          title="Again" 
+          onPress={() => {getRandomCard(randomCard?.card.card_id, "Again"); setFlipped(false)}} 
+        />
+        <Button 
+          color="#E69B00" 
+          disabled={!randomCard} 
+          title="Hard" 
+          onPress={() => {getRandomCard(randomCard?.card.card_id, "Hard"); setFlipped(false)}} 
+        />
+        <Button 
+          color="#6B8E23" 
+          disabled={!randomCard} 
+          title="Good" 
+          onPress={() => {getRandomCard(randomCard?.card.card_id, "Good"); setFlipped(false)}} 
+        />
+        <Button 
+          color="#A0C1D1" 
+          disabled={!randomCard} 
+          title="Easy" 
+          onPress={() => {getRandomCard(randomCard?.card.card_id, "Easy"); setFlipped(false)}} 
+        />
       </View>
     </View>
   );

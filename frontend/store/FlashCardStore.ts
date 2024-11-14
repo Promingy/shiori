@@ -14,6 +14,7 @@ export const useCardStore = create<FlashCards>((set) => ({
             const res = await fetch('http://localhost:8000/api/random_card/', {
                 method: 'GET',
                 headers,
+                credentials: 'include'
             })
             if (res.ok) {
                 const data = await res.json();

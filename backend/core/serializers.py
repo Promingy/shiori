@@ -10,7 +10,7 @@ class NotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = [
-                    'id', 
+                    'note_id', 
                     'model_id', 
                     'modified', 
                     'word', 
@@ -27,7 +27,7 @@ class NotesSerializer(serializers.ModelSerializer):
 class CardsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id', 'note', 'deck', 'type', 'order', 'queue', 'due']
+        fields = ['card_id', 'note', 'deck', 'type', 'order', 'queue', 'due']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -39,7 +39,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = Profile
-        fields = ['id', 'user']
+        fields = ['id', 'user', 'daily_new_cards', 'new_cards_today']
     
     def create(self, validated_data):
         user = self.context['user']

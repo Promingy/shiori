@@ -3,7 +3,7 @@ type getRandomCard = (card_id?: number, level?: string) => Promise<void>
 
 // Interfaces
 interface note {
-    id: number;
+    note_id: number;
     model_id: number;
     modified: number;
     word: string;
@@ -17,7 +17,7 @@ interface note {
 }
 
 interface card{
-    id: number;
+    card_id: number;
     note: number;
     deck: number;
     type: number;

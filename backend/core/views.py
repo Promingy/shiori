@@ -1,20 +1,31 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+# from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView
 from rest_framework import status
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
+from django.views import View
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
 from .models import *
 from .serializers import *
 import random
-# from fsrs import FSRS, Card, Rating
+from fsrs import Card as fCard, Rating, FSRS
 
-# f = FSRS()
+f = FSRS()
 
 # Create your views here.
-# #/ function based view
+class CsrfTokenView(View):
+    def get(self, request, *args, **kwargs):
+        """
+        Returns the CSRF Token to the frontend as JSON
+        """
+        csrf_token = get_token(request)
+        print('csrf_token', csrf_token)
+        return JsonResponse({"csrfToken": csrf_token})
+
 class Signup(CreateAPIView):
     serializer_class = ProfileSerializer
 
@@ -35,6 +46,9 @@ class Signup(CreateAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         profile_serializer = ProfileSerializer(data={"user": user}, context={"user": user})
+
+        user = authenticate(username=user.username, password=request.data["password"])
+
         login(request, user)
 
         if profile_serializer.is_valid():
@@ -44,8 +58,14 @@ class Signup(CreateAPIView):
         
         return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class RandomCard(APIView):
+class RandomCard(RetrieveUpdateAPIView):
     def get(self, request):
+        user = request.user
+        profile = get_object_or_404(Profile, user=user)
+
+        if profile.new_cards_today >= profile.daily_new_cards:
+            return Response({"message": "No more cards to learn today"}, status=status.HTTP_200_OK)
+
         # Get all cards
         cards = Card.objects.all()
 
@@ -69,3 +89,12 @@ class RandomCard(APIView):
         }
 
         return Response(data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        user = request.user
+
+
+
+        # Test response
+        return Response({"message": "Success"}, status=status.HTTP_200_OK)
+        pass

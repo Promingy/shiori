@@ -8,13 +8,29 @@ export default function SignupScreen() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [ csrfToken, setCsrfToken] = useState('');
 
   const { signup, isLoading, user} = useAuthStore();
+
+  // Fetch the CSRF token on component mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/csrf-token/');
+        const data = await response.json();
+        setCsrfToken(data.csrf_token);
+      } catch (error) {
+        console.error('Error fetching CSRF token:', error);
+      }
+    };
+
+    fetchCsrfToken();
+  }, []);
 
   const handleSignup = () => {
     if (firstName && lastName && email && password) {
       // Call signup function from auth store
-      signup(firstName, lastName, email, password);
+      signup(firstName, lastName, email, password, csrfToken);
 
       // Reset fields after successful signup
       setFirstName('');
