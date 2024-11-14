@@ -67,6 +67,8 @@ export default function TabTwoScreen() {
     };
   });
 
+  console.log(randomCard)
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Random Card</Text>
@@ -113,25 +115,25 @@ export default function TabTwoScreen() {
       <View style={styles.buttonContainer}>
         <Button 
           color="#D7003A" 
-          disabled={!randomCard} 
+          disabled={!randomCard?.card} 
           title="Again" 
           onPress={() => {getRandomCard(randomCard?.card.card_id, "Again"); setFlipped(false)}} 
         />
         <Button 
           color="#E69B00" 
-          disabled={!randomCard} 
+          disabled={!randomCard?.card} 
           title="Hard" 
           onPress={() => {getRandomCard(randomCard?.card.card_id, "Hard"); setFlipped(false)}} 
         />
         <Button 
           color="#6B8E23" 
-          disabled={!randomCard} 
+          disabled={!randomCard?.card} 
           title="Good" 
           onPress={() => {getRandomCard(randomCard?.card.card_id, "Good"); setFlipped(false)}} 
         />
         <Button 
           color="#A0C1D1" 
-          disabled={!randomCard} 
+          disabled={!randomCard?.card} 
           title="Easy" 
           onPress={() => {getRandomCard(randomCard?.card.card_id, "Easy"); setFlipped(false)}} 
         />

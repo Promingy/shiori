@@ -4,7 +4,6 @@ type SignupType = (
     last_name: string,
     email: string,
     password: string,
-    csrfToken: string,
 ) => Promise<void>;
 
 type LoginType = (
@@ -12,6 +11,9 @@ type LoginType = (
     password: string
 ) => Promise<void>;
 
+type GetUserType = () => Promise<void>;
+
+type Logout = () => Promise<void>;
 
 // Interfaces
 interface user {
@@ -25,5 +27,7 @@ export interface AuthState {
     isLoading: boolean;
     error: string | null;
     signup: SignupType;
+    getUser: GetUserType;
+    logout: Logout
     // login: LoginType;
 }

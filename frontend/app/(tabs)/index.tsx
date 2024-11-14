@@ -8,29 +8,17 @@ export default function SignupScreen() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [ csrfToken, setCsrfToken] = useState('');
 
-  const { signup, isLoading, user} = useAuthStore();
+  const { signup, isLoading, user, getUser, logout} = useAuthStore();
 
-  // Fetch the CSRF token on component mount
   useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/csrf-token/');
-        const data = await response.json();
-        setCsrfToken(data.csrf_token);
-      } catch (error) {
-        console.error('Error fetching CSRF token:', error);
-      }
-    };
-
-    fetchCsrfToken();
-  }, []);
+    getUser();
+  }, [])
 
   const handleSignup = () => {
     if (firstName && lastName && email && password) {
       // Call signup function from auth store
-      signup(firstName, lastName, email, password, csrfToken);
+      signup(firstName, lastName, email, password);
 
       // Reset fields after successful signup
       setFirstName('');
@@ -42,14 +30,15 @@ export default function SignupScreen() {
     }
   };
 
-  useEffect(() => {
-    console.log('test', user) 
-  }, [user])
+  const handleLogout = () => {
+    logout()
+  }
 
   if (user) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Welcome, {user.first_name}!</Text>
+        <Button title="Sign Out" onPress={handleLogout} />
       </View>
     );
   }
