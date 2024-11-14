@@ -19,14 +19,6 @@ from fsrs import Card as fCard, Rating, FSRS
 f = FSRS()
 
 # Create your views here.
-class GetCsrfToken(View):
-    def get(self, request):
-        csrf = get_token(request)
-        print('!!!!!!!!!!!!!!!!!!!!',csrf)
-        # set cookie
-        response = JsonResponse({'csrfToken': csrf})
-        response.set_cookie('X-CSRFToken', csrf)
-        return response
 
 class GetUser(RetrieveAPIView):
     serializer_class = UserSerializer

@@ -1,31 +1,28 @@
 import { create } from 'zustand';
 import { FlashCards } from '@/types/FlashCards';
+import { RequestOptions } from '@/types/Auth';
 
-const headers = new Headers({
+const headers = {
     'Content-Type': 'application/json',
-});
+};
 export const useCardStore = create<FlashCards>((set) => ({
     isLoading: false,
     error: null,
     randomCard: null,
-    getRandomCard: async (method='GET', card_id?: number, level?: string, csrf?: string)=> {
+    getRandomCard: async (method='GET', card_id?: number, level?: string)=> {
         set({isLoading: true, error: null});    
 
-        const params: any = {
+        const requestOptions: RequestOptions = {
             method,
             headers,
-            credentials: 'include'
         }
 
         if (method == "PUT") {
-            params.body = JSON.stringify({card_id, level})
+            requestOptions.body = JSON.stringify({card_id, level})
         }
-
         
         try {
-            console.log(csrf)
-            // const res = await fetch('http://localhost:8000/api/random_card/')
-            const res = await fetch('http://localhost:8000/api/random_card/', params)
+            const res = await fetch('http://localhost:8000/api/random_card/', requestOptions)
             if (res.ok) {
                 const data = await res.json();
                 set({randomCard: data});

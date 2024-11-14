@@ -1,5 +1,5 @@
 // Types
-type getRandomCard = (method?: string, card_id?: number, level?: string, csrf?: string) => Promise<void>
+type getRandomCard = (method?: "GET" | "POST" | "PUT" | "DELETE", card_id?: number, level?: string) => Promise<void>
 
 // Interfaces
 interface note {

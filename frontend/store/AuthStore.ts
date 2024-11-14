@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { AuthState } from '@/types/Auth';
+import { AuthState, RequestOptions } from '@/types/Auth';
+
+const headers = {
+    'Content-Type': 'application/json',
+}
 
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -12,11 +16,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         const res = await fetch('http://localhost:8000/api/signup/', {
             method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers,
             body: JSON.stringify({first_name, last_name, email, password}),
-            credentials: 'include'
         });
         if (res.ok){
             const data = await res.json();
@@ -31,7 +32,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     logout: async () => {
         const res = await fetch('http://localhost:8000/api/logout/', {
             method: 'POST',
-            credentials: 'include'
         });
         if (res.ok){
             set({user: null});
@@ -42,15 +42,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         const token = localStorage.getItem('token');
 
+        const requestOptions: RequestOptions = {
+            method: 'GET',
+            headers: {
+                ...headers, 
+                'Authorization': `Bearer ${token}`
+            },
+        }
+
+
         try {
-            const res = await fetch('http://localhost:8000/api/user/', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                credentials: 'include'
-            });
+            const res = await fetch('http://localhost:8000/api/user/', requestOptions);
     
             if (res.ok){
                 const data = await res.json();
@@ -72,14 +74,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const refresh = localStorage.getItem('refresh');
         if (!refresh) return;
 
-        const rest = await fetch('http://localhost:8000/api/token/refresh/', {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-            },
+        const requestOptions: RequestOptions = {
+            method: 'GET',
+            headers,
             body: JSON.stringify({refresh}),
-            credentials: 'include'
-        });
+        }
+
+        const rest = await fetch('http://localhost:8000/api/token/refresh/', requestOptions);
+        
         if (rest.ok){
             const data = await rest.json();
 

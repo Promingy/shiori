@@ -18,6 +18,13 @@ type LogoutType = () => Promise<void>;
 type TokenRefreshType = () => Promise<void>;
 
 // Interfaces
+
+export interface RequestOptions {
+    method: "GET" | "POST" | "PUT" | "DELETE";
+    headers: Record<string, string>;
+    body?: string;
+}
+
 interface user {
     first_name: string;
     last_name: string;
