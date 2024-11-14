@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { useAuthStore } from '@/store/store';
+import { useAuthStore } from '@/store/AuthStore';
 
 export default function SignupScreen() {
   const [firstName, setFirstName] = useState('');
@@ -9,7 +9,7 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { signup, isLoading} = useAuthStore();
+  const { signup, isLoading, user} = useAuthStore();
 
   const handleSignup = () => {
     if (firstName && lastName && email && password) {
@@ -25,6 +25,18 @@ export default function SignupScreen() {
       Alert.alert('Error', 'Please fill out all fields');
     }
   };
+
+  useEffect(() => {
+    console.log('test', user) 
+  }, [user])
+
+  if (user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Welcome, {user.first_name}!</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

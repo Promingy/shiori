@@ -5,9 +5,13 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework import status
 from django.contrib.auth.models import User
+from django.contrib.auth import login
 from .models import *
 from .serializers import *
 import random
+# from fsrs import FSRS, Card, Rating
+
+# f = FSRS()
 
 # Create your views here.
 # #/ function based view

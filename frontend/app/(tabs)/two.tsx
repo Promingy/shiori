@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Button, View, TouchableOpacity } from 'react-native';
-import { useAuthStore } from '@/store/store';
+import { StyleSheet, Button, View, TouchableOpacity, Image } from 'react-native';
+import { useAuthStore } from '@/store/AuthStore';
+import { useCardStore } from '@/store/FlashCardStore';
 import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import AudioPlayer from '@/components/AudioPlayer';
+import { S3_BUCKET } from '@env';
 
 export default function TabTwoScreen() {
-  const { randomCard, getRandomCard } = useAuthStore();
+  const { randomCard, getRandomCard } = useCardStore();
   const [flipped, setFlipped] = useState(false);
 
   // card field order - Word, Pronunciation, Definition, Sentence (Japanese), Sentence (English), IMG, arr of media, arr of media
@@ -27,7 +29,7 @@ export default function TabTwoScreen() {
   }, []);
 
   useEffect(() => {
-    if (randomCard.notes) { 
+    if (randomCard) { 
       const fields = randomCard.notes[0];
 
       setWord( fields.word || '');
@@ -41,7 +43,6 @@ export default function TabTwoScreen() {
     }
   }, [randomCard]); // Ensure this runs when randomCard changes
 
-  console.log(randomCard)
   const flipCard = () => {
     setFlipped(!flipped);
   };
@@ -66,7 +67,6 @@ export default function TabTwoScreen() {
     };
   });
 
-  console.log("word", wordSoundFile,"sentence", sentenceSoundFile);
 
   return (
     <View style={styles.container}>
@@ -87,6 +87,9 @@ export default function TabTwoScreen() {
                   <View style={styles.divider} />
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
                   <Text style={styles.cardDescription}>{definition}</Text>
+                  { imageFile && 
+                    <Image source={{ uri: `${S3_BUCKET}${imageFile}` }} style={styles.cardImage} />
+                  }
                   <Text style={styles.cardSentenceJPContainer}>
                     <RenderHTML tagsStyles={{ p: styles.cardSentenceJP, b: {fontWeight: "400"} }} contentWidth={300} source={{ html: `<p>${sentenceJP}</p>` }} />
                   </Text>
@@ -108,7 +111,12 @@ export default function TabTwoScreen() {
       </TouchableOpacity>
   
       {/* Button to fetch a new random card */}
-      <Button title="Get Another Random Card" onPress={() => {getRandomCard(); setFlipped(false)}} />
+      <View style={styles.buttonContainer}>
+        <Button color="#D7003A" title="Again" onPress={() => {getRandomCard(); setFlipped(false)}} />
+        <Button color="#E69B00" title="Hard" onPress={() => {getRandomCard(); setFlipped(false)}} />
+        <Button color="#6B8E23" title="Good" onPress={() => {getRandomCard(); setFlipped(false)}} />
+        <Button color="#A0C1D1" title="Easy" onPress={() => {getRandomCard(); setFlipped(false)}} />
+      </View>
     </View>
   );
   
@@ -140,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden', // Hide the back side when flipped
-    transformStyle: 'preserve-3d', // Maintain 3D transformation
+    // transformStyle: 'preserve-3d', // Maintain 3D transformation
   },
   cardContent: {
     position: 'absolute',
@@ -172,7 +180,10 @@ const styles = StyleSheet.create({
   },
   cardSentenceJPContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
     marginVertical: 10,
+    textAlign: 'center',
   },
   cardSentenceJP: {
     fontSize: 25,
@@ -186,6 +197,7 @@ const styles = StyleSheet.create({
     fontSize:20,
     color: '#333',
     marginVertical: 5,
+    textAlign: 'center',
   },
   audioContainer: {
     flexDirection: 'row',
@@ -193,4 +205,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     gap: 20,
   },
+  cardImage: {
+    width: 200,
+    height: 200,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 25
+    // justifyContent: 'space-around',
+    // width: '100%',
+  }
 });

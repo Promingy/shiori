@@ -11,7 +11,6 @@ class NotesSerializer(serializers.ModelSerializer):
         model = Note
         fields = [
                     'id', 
-                    'guid', 
                     'model_id', 
                     'modified', 
                     'word', 
@@ -22,7 +21,6 @@ class NotesSerializer(serializers.ModelSerializer):
                     'word_img', 
                     'word_audio', 
                     'sentence_audio', 
-                    'tags'
                 ]
 
 
