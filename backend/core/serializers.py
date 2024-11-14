@@ -9,7 +9,21 @@ class DecksSerializer(serializers.ModelSerializer):
 class NotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = ['id', 'guid', 'model_id', 'modified', 'fields', 'tags']
+        fields = [
+                    'id', 
+                    'guid', 
+                    'model_id', 
+                    'modified', 
+                    'word', 
+                    'word_in_kana', 
+                    'definition', 
+                    'sentence_jp', 
+                    'sentence_en', 
+                    'word_img', 
+                    'word_audio', 
+                    'sentence_audio', 
+                    'tags'
+                ]
 
 
 class CardsSerializer(serializers.ModelSerializer):
@@ -17,11 +31,6 @@ class CardsSerializer(serializers.ModelSerializer):
         model = Card
         fields = ['id', 'note', 'deck', 'type', 'order', 'queue', 'due']
 
-
-class MediaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Media
-        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

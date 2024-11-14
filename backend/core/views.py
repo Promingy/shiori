@@ -31,6 +31,7 @@ class Signup(CreateAPIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         profile_serializer = ProfileSerializer(data={"user": user}, context={"user": user})
+        login(request, user)
 
         if profile_serializer.is_valid():
             profile = profile_serializer.save()

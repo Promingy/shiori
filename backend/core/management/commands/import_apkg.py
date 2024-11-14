@@ -20,12 +20,38 @@ class Command(BaseCommand):
                 )
             
                 for note_id, note_data in reader.get_all_notes().items():
+                    #get fields and normalize data before adding it to the database
+                    word = note_data['fields'][0]
+                    word_in_kana = note_data['fields'][1]
+                    definition = note_data['fields'][2]
+                    sentence_jp = note_data['fields'][3]
+                    sentence_en = note_data['fields'][4]
+                    image = note_data['fields'][5]
+                    word_audio = note_data['fields'][6]
+                    sentence_audio = note_data['fields'][7]
+
+                    if image: 
+                        image = image.split('"')[1]
+
+                    if word_audio:
+                        word_audio = word_audio[7:-1]
+                    
+                    if sentence_audio:
+                        sentence_audio = sentence_audio[7:-1]
+                        
                     note = Note.objects.create(
                         note_id=note_data['id'],
                         guid=note_data['guid'],
                         model_id=note_data['model_id'],
                         modified=note_data['modified'],
-                        fields=note_data['fields'],
+                        word=word,
+                        word_in_kana=word_in_kana,
+                        definition=definition,
+                        sentence_jp=sentence_jp,
+                        sentence_en=sentence_en,
+                        word_img=image,
+                        word_audio=word_audio,
+                        sentence_audio=sentence_audio,
                         tags=note_data['tags'],
                         deck=deck
                     )

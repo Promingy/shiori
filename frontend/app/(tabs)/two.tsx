@@ -6,23 +6,19 @@ import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react
 import RenderHTML from 'react-native-render-html';
 import AudioPlayer from '@/components/AudioPlayer';
 
-const extractFileName = (field: string) => {
-  const match = field.match(/\[sound:(.+?\.\w+)\]/);
-    return match ? match[1] : '';
-}
-
 export default function TabTwoScreen() {
   const { randomCard, getRandomCard } = useAuthStore();
   const [flipped, setFlipped] = useState(false);
 
-  // card field order - Word, Pronunciation, Definition, Sentence (Japanese), Sentence (English), empty, arr of media, arr of media
-  const [title, setTitle] = useState('');
+  // card field order - Word, Pronunciation, Definition, Sentence (Japanese), Sentence (English), IMG, arr of media, arr of media
+  const [word, setWord] = useState('');
   const [pronunciation, setPronunciation] = useState('');
-  const [description, setDescription] = useState('');
+  const [definition, setDefinition] = useState('');
   const [sentenceJP, setSentenceJP] = useState('');
   const [sentenceEN, setSentenceEN] = useState('');
   const [wordSoundFile, setWordSoundFile] = useState('');
   const [sentenceSoundFile, setSentenceSoundFile] = useState('');
+  const [imageFile, setImageFile] = useState('');
 
 
   useEffect(() => {
@@ -31,19 +27,21 @@ export default function TabTwoScreen() {
   }, []);
 
   useEffect(() => {
-    const noteFields = randomCard?.notes[0]?.fields;
-    const cleanedFields = eval(noteFields); // Safely eval if it's an array
-      if (Array.isArray(cleanedFields)) {
-        setTitle(cleanedFields[0] || '');
-        setPronunciation(cleanedFields[1] || '');
-        setDescription(cleanedFields[2] || '');
-        setSentenceJP(cleanedFields[3] || '');
-        setSentenceEN(cleanedFields[4] || '');
-        setWordSoundFile(extractFileName(cleanedFields[6]) || '');
-        setSentenceSoundFile(extractFileName(cleanedFields[7]) || '');
+    if (randomCard.notes) { 
+      const fields = randomCard.notes[0];
+
+      setWord( fields.word || '');
+      setPronunciation( fields.word_in_kana || '');
+      setDefinition( fields.definition || '');
+      setSentenceJP( fields.sentence_jp || '');
+      setSentenceEN( fields.sentence_en || '');
+      setWordSoundFile( fields.word_audio || '');
+      setSentenceSoundFile( fields.sentence_audio || '');
+      setImageFile( fields.word_img || '');
     }
   }, [randomCard]); // Ensure this runs when randomCard changes
 
+  console.log(randomCard)
   const flipCard = () => {
     setFlipped(!flipped);
   };
@@ -81,14 +79,14 @@ export default function TabTwoScreen() {
             <>
               {!flipped ? (
                 <View style={[styles.cardContent, frontAnimatedStyle]}>
-                  <Text style={styles.cardTitle}>{title}</Text>
+                  <Text style={styles.cardTitle}>{word}</Text>
                 </View>
               ) : (
                 <View style={[styles.cardContent, backAnimatedStyle]}>
-                  <Text style={styles.cardTitle}>{title}</Text>
+                  <Text style={styles.cardTitle}>{word}</Text>
                   <View style={styles.divider} />
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
-                  <Text style={styles.cardDescription}>{description}</Text>
+                  <Text style={styles.cardDescription}>{definition}</Text>
                   <Text style={styles.cardSentenceJPContainer}>
                     <RenderHTML tagsStyles={{ p: styles.cardSentenceJP, b: {fontWeight: "400"} }} contentWidth={300} source={{ html: `<p>${sentenceJP}</p>` }} />
                   </Text>
