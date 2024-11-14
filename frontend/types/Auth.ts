@@ -13,7 +13,9 @@ type LoginType = (
 
 type GetUserType = () => Promise<void>;
 
-type Logout = () => Promise<void>;
+
+type LogoutType = () => Promise<void>;
+type TokenRefreshType = () => Promise<void>;
 
 // Interfaces
 interface user {
@@ -28,6 +30,7 @@ export interface AuthState {
     error: string | null;
     signup: SignupType;
     getUser: GetUserType;
-    logout: Logout
+    logout: LogoutType;
+    tokenRefresh: TokenRefreshType;
     // login: LoginType;
 }

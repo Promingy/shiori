@@ -117,25 +117,25 @@ export default function TabTwoScreen() {
           color="#D7003A" 
           disabled={!randomCard?.card} 
           title="Again" 
-          onPress={() => {getRandomCard(randomCard?.card.card_id, "Again"); setFlipped(false)}} 
+          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Again"); setFlipped(false)}} 
         />
         <Button 
           color="#E69B00" 
           disabled={!randomCard?.card} 
           title="Hard" 
-          onPress={() => {getRandomCard(randomCard?.card.card_id, "Hard"); setFlipped(false)}} 
+          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Hard"); setFlipped(false)}} 
         />
         <Button 
           color="#6B8E23" 
           disabled={!randomCard?.card} 
           title="Good" 
-          onPress={() => {getRandomCard(randomCard?.card.card_id, "Good"); setFlipped(false)}} 
+          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Good"); setFlipped(false)}} 
         />
         <Button 
           color="#A0C1D1" 
           disabled={!randomCard?.card} 
           title="Easy" 
-          onPress={() => {getRandomCard(randomCard?.card.card_id, "Easy"); setFlipped(false)}} 
+          onPress={() => {getRandomCard("PUT", randomCard?.card.card_id, "Easy"); setFlipped(false)}} 
         />
       </View>
     </View>

@@ -9,11 +9,7 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { signup, isLoading, user, getUser, logout} = useAuthStore();
-
-  useEffect(() => {
-    getUser();
-  }, [])
+  const { signup, isLoading, user, logout} = useAuthStore();
 
   const handleSignup = () => {
     if (firstName && lastName && email && password) {

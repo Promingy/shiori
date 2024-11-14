@@ -1,9 +1,11 @@
 from django.shortcuts import render, get_object_or_404
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.views import View
@@ -17,8 +19,18 @@ from fsrs import Card as fCard, Rating, FSRS
 f = FSRS()
 
 # Create your views here.
+class GetCsrfToken(View):
+    def get(self, request):
+        csrf = get_token(request)
+        print('!!!!!!!!!!!!!!!!!!!!',csrf)
+        # set cookie
+        response = JsonResponse({'csrfToken': csrf})
+        response.set_cookie('X-CSRFToken', csrf)
+        return response
+
 class GetUser(RetrieveAPIView):
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = request.user
@@ -48,33 +60,38 @@ class Signup(CreateAPIView):
 
         profile_serializer = ProfileSerializer(data={"user": user}, context={"user": user})
 
-        user = authenticate(username=user.username, password=request.data["password"])
-
-        login(request, user)
-
         if profile_serializer.is_valid():
             profile = profile_serializer.save()
+
+            # Generate Token
+            refresh = RefreshToken.for_user(user)
+            token_data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user' : profile_serializer.data['user']
+            }
             
-            return Response(profile_serializer.data['user'], status=status.HTTP_201_CREATED)
+            return Response(token_data, status=status.HTTP_201_CREATED)
         
         return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Logout(APIView):
-    def get(self, request):
+    def post(self, request):
         logout(request)
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 class RandomCard(RetrieveUpdateAPIView):
     def get(self, request):
-        user = request.user
-        profile = get_object_or_404(Profile, user=user)
+        # user = request.user
+        # profile = get_object_or_404(Profile, user=user)
 
-        if profile.new_cards_today >= profile.daily_new_cards:
-            return Response({"message": "No more cards to learn today"}, status=status.HTTP_200_OK)
 
-        profile.new_cards_today += 1
-        profile.save()
+        # if profile.new_cards_today >= profile.daily_new_cards:
+        #     return Response({"message": "No more cards to learn today"}, status=status.HTTP_200_OK)
+
+        # profile.new_cards_today += 1
+        # profile.save()
 
         # Get all cards
         cards = Card.objects.all()
@@ -83,7 +100,6 @@ class RandomCard(RetrieveUpdateAPIView):
             return Response({"error": "No Cards found"}, status=status.HTTP_404_NOT_FOUND)
         
         # pick a random card
-        # random_card = cards.order_by('?').first()
         random_card = random.choice(cards)
 
         #  Get the notes corresponding to the card
@@ -96,17 +112,23 @@ class RandomCard(RetrieveUpdateAPIView):
         data = {
             "card": card_serializer.data,
             "notes": notes_serializer.data,
-            "daily_new_cards": profile.daily_new_cards,
-            "new_cards_today": profile.new_cards_today
+            # "daily_new_cards": profile.daily_new_cards,
+            # "new_cards_today": profile.new_cards_today
         }
 
         return Response(data, status=status.HTTP_200_OK)
     
     def put(self, request):
         user = request.user
+        randomCard = self.get(request).data
 
+
+        # testCard = fCard()
+        # testCard.id = request.data["card_id"]
+        # testCard.rating = request.data["rating"]
+
+        # print("~~~~~~~~~~~~~~~~~~~~~~~", testCard)
 
 
         # Test response
-        return Response({"message": "Success"}, status=status.HTTP_200_OK)
-        pass
+        return Response(randomCard, status=status.HTTP_200_OK)
