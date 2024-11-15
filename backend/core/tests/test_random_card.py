@@ -11,6 +11,18 @@ from datetime import datetime, timezone as tz
 from unittest.mock import patch
 import random
 
+# States
+    # 0: New
+    # 1: Learning
+    # 2: Review
+    # 3: Relearning
+
+# Rating
+    # 1: Again
+    # 2: Hard
+    # 3: Good
+    # 4: Easy
+
 class RandomCardTestCase(TestCase):
     def setUp(self):
         # Create a user and profile
@@ -87,13 +99,13 @@ class RandomCardTestCase(TestCase):
         
         # Set up the client
         self.client = APIClient()
-        self.client.login(username='testuser', password='testpassword')
 
         refresh = RefreshToken.for_user(self.user)
         self.token = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+
 
     def test_get_random_review_card(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
         
         # Mock random.choice to avoid real randomness in test
         with self.settings(RANDOM_CHOICE=lambda x: x[0]):
@@ -115,7 +127,6 @@ class RandomCardTestCase(TestCase):
     from unittest.mock import patch
 
     def test_get_random_new_card(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
         # Mock random.choice to always pick a new card (second element in the list)
         with patch('random.choice', side_effect=[self.review_card1, self.card2]):
@@ -139,33 +150,33 @@ class RandomCardTestCase(TestCase):
     def test_no_more_new_cards_today(self):
         self.profile.new_cards_today = self.profile.daily_new_cards
         self.profile.save()
-        response = self.client.get('/random-card/')
+        response = self.client.get(reverse('random_card'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], "No more cards to learn today")
 
-    # def test_no_cards_found(self):
-    #     Card.objects.all().delete()
-    #     ReviewCard.objects.all().delete()
-    #     response = self.client.get('/random-card/')
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    #     self.assertEqual(response.data['error'], "No Cards found")
+    def test_no_cards_found(self):
+        Card.objects.all().delete()
+        ReviewCard.objects.all().delete()
+        response = self.client.get(reverse('random_card'))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['error'], "No Cards found")
 
-    # def test_put_review_card(self):
-    #     data = {
-    #         'id': self.review_card1.id,
-    #         'level': 'EASY'
-    #     }
-    #     response = self.client.put('/random-card/', data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.review_card1.refresh_from_db()
-    #     self.assertEqual(self.review_card1.state, 'REVIEWED')
+    def test_put_review_card(self):
+        data = {
+            'id': self.review_card1.id,
+            'level': 'Easy'
+        }
+        response = self.client.put(reverse('random_card'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.review_card1.refresh_from_db()
+        self.assertEqual(self.review_card1.state, 2)
 
-    # def test_put_new_card(self):
-    #     data = {
-    #         'id': self.card1.id,
-    #         'level': 'EASY'
-    #     }
-    #     response = self.client.put('/random-card/', data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     review_card = ReviewCard.objects.get(card_id=self.card1.id)
-    #     self.assertEqual(review_card.state, 'REVIEWED')
+    def test_put_new_card(self):
+        data = {
+            'id': self.card1.id,
+            'level': 'Easy'
+        }
+        response = self.client.put(reverse('random_card'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        review_card = ReviewCard.objects.get(card_id=self.card1.id)
+        self.assertEqual(review_card.state, 2)
