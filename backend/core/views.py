@@ -1,21 +1,21 @@
-from django.shortcuts import render, get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView, RetrieveAPIView
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.models import User, AnonymousUser
+from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import login, authenticate, logout
-from django.views import View
-from django.http import JsonResponse
-from django.middleware.csrf import get_token
-from .models import *
-from .serializers import *
-import random
+from django.contrib.auth.models import User, AnonymousUser
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render, get_object_or_404
 from fsrs import FSRS, Rating, Card as f_card
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
+from rest_framework.response import Response
+from django.middleware.csrf import get_token
+from rest_framework.views import APIView
+from django.http import JsonResponse
+from rest_framework import status
+from django.views import View
+from .serializers import *
+from .models import *
+import random
 
 f = FSRS()
 
@@ -147,7 +147,11 @@ class RandomCard(RetrieveUpdateAPIView):
         # Get the notes corresponding to the card
         notes = Note.objects.filter(id=random_card.id)
 
-        data = self.serialize(random_card, notes, profile)
+        data = self.serialize_card_and_notes(random_card, notes, profile)
+        data.update({
+            "new_cards_left": profile.daily_new_cards - profile.new_cards_today,
+            "review_cards_left": len(due_review_cards)
+        })
 
         return Response(data, status=status.HTTP_200_OK)
     
@@ -169,6 +173,11 @@ class RandomCard(RetrieveUpdateAPIView):
         card_level = request.data['level']
         rating = Rating[card_level]
         card, review_log = f.review_card(card, rating)
+
+        # this sets the card to be available for review immediately instead of 
+        # having to come back to the app after a few minutes/hours
+        if card.due.date() == datetime.now(timezone.utc).date():
+            card.due = card.due - timedelta(minutes=30)
 
         # # Create Review Card from the card
         review_card = ReviewCard.objects.update_or_create(
@@ -219,10 +228,10 @@ class RandomCard(RetrieveUpdateAPIView):
             "notes": serialized_notes.data
         }
 
-        if profile:
-            data.update({
-                "daily_new_cards": profile.daily_new_cards,
-                "new_card_today": profile.new_cards_today
-            })
+        # if profile:
+        #     # data.update({
+        #     #     "daily_new_cards": profile.daily_new_cards,
+        #     #     "new_card_today": profile.new_cards_today
+        #     # })
         
         return data

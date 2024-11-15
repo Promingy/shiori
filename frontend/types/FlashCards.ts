@@ -26,6 +26,8 @@ interface Card{
 export interface RandomCard {
     card: Card;
     notes: Note[];
+    new_cards_left?: number;
+    review_cards_left?: number;
     message?: string;
 }
 
