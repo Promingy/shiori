@@ -114,7 +114,10 @@ class RandomCard(RetrieveUpdateAPIView):
             return Response({"error": "No Cards found"}, status=status.HTTP_404_NOT_FOUND)
         
         # pick a random card
-        random_card = random.choice(cards)
+        # random_card = random.choice(cards)
+
+        # Get Same Card Everytime
+        random_card = cards.first()
 
         #  Get the notes corresponding to the card
         notes = Note.objects.filter(note_id=random_card.note.note_id)
@@ -137,33 +140,36 @@ class RandomCard(RetrieveUpdateAPIView):
         new_card = self.get(request).data
         
         try:
-            card_reviewed = get_object_or_404(ReviewCard, id=request.data['id'])
+            card_reviewed = ReviewCard.objects.get(id=request.data['id'])
+            card = f_card.from_dict(card_reviewed)
         except Exception as e:
             card_reviewed = Card.objects.get(id=request.data['id'])
-            
+            card = f_card(card_reviewed)
+
         card_level = request.data['level']
         
-        card = f_card(card_reviewed)
         rating = Rating[card_level]
 
         card, review_log = f.review_card(card, rating)
 
         # # Create Review Card from the card
-        review_card = ReviewCard.objects.create(
-            user = user,
-            id = card_reviewed.id,
-            card_id = card_reviewed.card_id,
-            note = card_reviewed.note,
-            deck = card_reviewed.deck,
-            due = card.due,
-            stability = card.stability,
-            difficulty = card.difficulty,
-            elapsed_days = card.elapsed_days,
-            scheduled_days = card.scheduled_days,
-            reps = card.reps,
-            lapses = card.lapses,
-            state = card.state,
-            last_review = card.last_review
+        review_card = ReviewCard.objects.update_or_create(
+            id=card_reviewed.id,
+            defaults={
+                "user" : user,
+                "card_id" : card_reviewed.card_id,
+                "note" : card_reviewed.note,
+                "deck" : card_reviewed.deck,
+                "due" : card.due,
+                "stability" : card.stability,
+                "difficulty" : card.difficulty,
+                "elapsed_days" : card.elapsed_days,
+                "scheduled_days" : card.scheduled_days,
+                "reps" : card.reps,
+                "lapses" : card.lapses,
+                "state" : card.state,
+                "last_review" : card.last_review
+            }
         )
 
         return Response(new_card, status=status.HTTP_200_OK)
