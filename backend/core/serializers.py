@@ -9,19 +9,31 @@ class DecksSerializer(serializers.ModelSerializer):
 class NotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = ['id', 'guid', 'model_id', 'modified', 'fields', 'tags']
+        fields = [
+                    'note_id', 
+                    'model_id', 
+                    'modified', 
+                    'word', 
+                    'word_in_kana', 
+                    'definition', 
+                    'sentence_jp', 
+                    'sentence_en', 
+                    'word_img', 
+                    'word_audio', 
+                    'sentence_audio', 
+                ]
 
 
-class CardsSerializer(serializers.ModelSerializer):
+class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['id', 'note', 'deck', 'type', 'order', 'queue', 'due']
+        fields = ['id','card_id', 'note', 'deck']
 
-
-class MediaSerializer(serializers.ModelSerializer):
+class ReviewCardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Media
-        fields = '__all__'
+        model = Card
+        fields = ['id','card_id', 'note', 'deck', 'due', 'stability', 'difficulty', 'elapsed_days', 'scheduled_days', 'reps', 'lapses', 'state', 'last_review']
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +44,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = Profile
-        fields = ['id', 'user']
+        fields = ['id', 'user', 'daily_new_cards', 'new_cards_today']
     
     def create(self, validated_data):
         user = self.context['user']

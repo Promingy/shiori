@@ -1,28 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Button, View, TouchableOpacity } from 'react-native';
-import { useAuthStore } from '@/store/store';
+import { StyleSheet, Button, View, TouchableOpacity, Image } from 'react-native';
+import { useCardStore } from '@/store/FlashCardStore';
 import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import AudioPlayer from '@/components/AudioPlayer';
-
-const extractFileName = (field: string) => {
-  const match = field.match(/\[sound:(.+?\.\w+)\]/);
-    return match ? match[1] : '';
-}
+import { S3_BUCKET } from '@env';
 
 export default function TabTwoScreen() {
-  const { randomCard, getRandomCard } = useAuthStore();
+  const { randomCard, getRandomCard } = useCardStore();
   const [flipped, setFlipped] = useState(false);
 
-  // card field order - Word, Pronunciation, Definition, Sentence (Japanese), Sentence (English), empty, arr of media, arr of media
-  const [title, setTitle] = useState('');
+  // card field order - Word, Pronunciation, Definition, Sentence (Japanese), Sentence (English), IMG, arr of media, arr of media
+  const [word, setWord] = useState('');
   const [pronunciation, setPronunciation] = useState('');
-  const [description, setDescription] = useState('');
+  const [definition, setDefinition] = useState('');
   const [sentenceJP, setSentenceJP] = useState('');
   const [sentenceEN, setSentenceEN] = useState('');
   const [wordSoundFile, setWordSoundFile] = useState('');
   const [sentenceSoundFile, setSentenceSoundFile] = useState('');
+  const [imageFile, setImageFile] = useState('');
 
 
   useEffect(() => {
@@ -31,64 +28,52 @@ export default function TabTwoScreen() {
   }, []);
 
   useEffect(() => {
-    const noteFields = randomCard?.notes[0]?.fields;
-    const cleanedFields = eval(noteFields); // Safely eval if it's an array
-      if (Array.isArray(cleanedFields)) {
-        setTitle(cleanedFields[0] || '');
-        setPronunciation(cleanedFields[1] || '');
-        setDescription(cleanedFields[2] || '');
-        setSentenceJP(cleanedFields[3] || '');
-        setSentenceEN(cleanedFields[4] || '');
-        setWordSoundFile(extractFileName(cleanedFields[6]) || '');
-        setSentenceSoundFile(extractFileName(cleanedFields[7]) || '');
+    if (randomCard && randomCard.notes) { 
+      const fields = randomCard.notes[0];
+
+      setWord( fields.word || '');
+      setPronunciation( fields.word_in_kana || '');
+      setDefinition( fields.definition || '');
+      setSentenceJP( fields.sentence_jp || '');
+      setSentenceEN( fields.sentence_en || '');
+      setWordSoundFile( fields.word_audio || '');
+      setSentenceSoundFile( fields.sentence_audio || '');
+      setImageFile( fields.word_img || '');
     }
   }, [randomCard]); // Ensure this runs when randomCard changes
 
-  const flipCard = () => {
-    setFlipped(!flipped);
-  };
+  const handleSubmit = (level: string): void => {
+    if (!randomCard) return;
 
-  const rotateY = useSharedValue(0);
+    getRandomCard('PUT', randomCard.card.id, level)
+    
+    setFlipped(false)
+  }
 
-  useEffect(() => {
-    rotateY.value = withSpring(flipped ? 180 : 0);
-  }, [flipped]);
-
-  const frontAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotateY: `${interpolate(rotateY.value, [0, 180], [0, 180])}deg`}],
-      opacity: interpolate(rotateY.value, [0, 90], [1, 0]),
-    };
-  });
-
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotateY: `${interpolate(rotateY.value, [0, 180], [0, 180])}deg`}],
-      opacity: interpolate(rotateY.value, [90, 180], [0, 1]),
-    };
-  });
-
-  console.log("word", wordSoundFile,"sentence", sentenceSoundFile);
+  if (!randomCard) return null;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Random Card</Text>
       
       {/* Card container with animated flip */}
-      <TouchableOpacity onPress={flipCard}>
+      <TouchableOpacity disabled={!!randomCard.message} onPress={() => setFlipped(!flipped)}>
         <View style={styles.card}>
-          {randomCard ? (
+          {randomCard && randomCard.card ? (
             <>
               {!flipped ? (
-                <View style={[styles.cardContent, frontAnimatedStyle]}>
-                  <Text style={styles.cardTitle}>{title}</Text>
+                <View style={[styles.cardContent]}>
+                  <Text style={styles.cardTitle}>{word}</Text>
                 </View>
               ) : (
-                <View style={[styles.cardContent, backAnimatedStyle]}>
-                  <Text style={styles.cardTitle}>{title}</Text>
+                <View style={[styles.cardContent]}>
+                  <Text style={styles.cardTitle}>{word}</Text>
                   <View style={styles.divider} />
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
-                  <Text style={styles.cardDescription}>{description}</Text>
+                  <Text style={styles.cardDescription}>{definition}</Text>
+                  { imageFile && 
+                    <Image source={{ uri: `${S3_BUCKET}${imageFile}` }} style={styles.cardImage} />
+                  }
                   <Text style={styles.cardSentenceJPContainer}>
                     <RenderHTML tagsStyles={{ p: styles.cardSentenceJP, b: {fontWeight: "400"} }} contentWidth={300} source={{ html: `<p>${sentenceJP}</p>` }} />
                   </Text>
@@ -97,20 +82,45 @@ export default function TabTwoScreen() {
                   <View style={styles.audioContainer}>
                     <AudioPlayer fileName={wordSoundFile}/>
                     <AudioPlayer fileName={sentenceSoundFile}/>
-                    </View>
+                  </View>
                 </View>
               )}
             </>
           ) : (
-            <View style={[styles.cardContent, frontAnimatedStyle]}>
-              <Text>Loading...</Text>
-            </View>
+              <View style={[styles.cardContent]}>
+                <Text>{randomCard?.message || "Loading..."}</Text>
+              </View>
           )}
         </View>
       </TouchableOpacity>
   
       {/* Button to fetch a new random card */}
-      <Button title="Get Another Random Card" onPress={() => {getRandomCard(); setFlipped(false)}} />
+      <View style={styles.buttonContainer}>
+        <Button 
+          color="#D7003A" 
+          disabled={!randomCard?.card} 
+          title="Again" 
+          onPress={() => handleSubmit("Again")} 
+        />
+        <Button 
+          color="#E69B00" 
+          disabled={!randomCard?.card} 
+          title="Hard" 
+          onPress={() => handleSubmit("Hard")} 
+        />
+        <Button 
+          color="#6B8E23" 
+          disabled={!randomCard?.card} 
+          title="Good" 
+          onPress={() => handleSubmit("Good")} 
+        />
+        <Button 
+          color="#A0C1D1" 
+          disabled={!randomCard?.card} 
+          title="Easy" 
+          onPress={() => handleSubmit("Easy")} 
+        />
+      </View>
     </View>
   );
   
@@ -142,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden', // Hide the back side when flipped
-    transformStyle: 'preserve-3d', // Maintain 3D transformation
+    // transformStyle: 'preserve-3d', // Maintain 3D transformation
   },
   cardContent: {
     position: 'absolute',
@@ -174,7 +184,10 @@ const styles = StyleSheet.create({
   },
   cardSentenceJPContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
     marginVertical: 10,
+    textAlign: 'center',
   },
   cardSentenceJP: {
     fontSize: 25,
@@ -188,6 +201,7 @@ const styles = StyleSheet.create({
     fontSize:20,
     color: '#333',
     marginVertical: 5,
+    textAlign: 'center',
   },
   audioContainer: {
     flexDirection: 'row',
@@ -195,4 +209,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     gap: 20,
   },
+  cardImage: {
+    width: 200,
+    height: 200,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 25
+  }
 });

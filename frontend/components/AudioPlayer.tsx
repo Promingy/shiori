@@ -24,7 +24,6 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
         if (status.isLoaded) {
             // Check if audio is finished playing
             if (status.didJustFinish) {
-                console.log('Audio finished playing');
                 setIsPlaying(false);
             }
         }

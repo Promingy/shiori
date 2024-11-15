@@ -1,1 +1,99 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+db.sqlite3
+*.sql
+*.dump
+
+# Django migrations
+**/migrations/*
+
+# Media files
+media/
+
+# Static files
+staticfiles/
+static/
+
+# Local environment variables
 .env
+
+# Secrets
+secrets.json
+
+# Django cache and search index files
+*.cache
+*.mo
+*.search
+*.swp
+*.swo
+*.pid
+*.lock
+
+# VS Code settings (optional, if you're using VS Code)
+.vscode/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pyright
+pyrightconfig.json
+
+# Virtual environment
+venv/
+.venv/
+ENV/
+env/
+build/
+dist/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# node modules (if you use Node.js for frontend dependencies)
+node_modules/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# celery
+celerybeat-schedule
+celerybeat.pid
+
+# translations
+*.mo
+
+# pytest
+.cache/

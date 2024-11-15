@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { useAuthStore } from '@/store/store';
+import { useAuthStore } from '@/store/AuthStore';
 
 export default function SignupScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(false);
 
-  const { signup, isLoading} = useAuthStore();
+  const { signup, isLoading, user, logout, login} = useAuthStore();
 
   const handleSignup = () => {
+    
     if (firstName && lastName && email && password) {
       // Call signup function from auth store
       signup(firstName, lastName, email, password);
@@ -21,10 +23,58 @@ export default function SignupScreen() {
       setLastName('');
       setEmail('');
       setPassword('');
-    } else {
+    } 
+    
+    else {
       Alert.alert('Error', 'Please fill out all fields');
     }
   };
+
+  const handleLogin = () => {
+    if (email && password) {
+      login(email, password);
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+  }
+
+  if (user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Welcome, {user.first_name}!</Text>
+        <Button title="Sign Out" onPress={handleLogout} />
+      </View>
+    );
+  }
+
+  if (isLogin) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Login</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', gap: 25 }}>  
+          <Button title={isLoading ? 'Logging In...' : 'Login'} onPress={handleLogin} />
+          <Button title="Sign Up" onPress={() => setIsLogin(false)} /> 
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -56,7 +106,11 @@ export default function SignupScreen() {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title={isLoading ? 'Signing Up...' : 'Sign Up'} onPress={handleSignup} />
+      <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', gap: 25 }}>
+        <Button title={isLoading ? 'Signing Up...' : 'Sign Up'} onPress={handleSignup} />
+        <Button title="Login" onPress={() => setIsLogin(true)} />
+
+      </View>
     </View>
   );
 }
