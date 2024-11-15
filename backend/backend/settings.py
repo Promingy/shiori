@@ -31,6 +31,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOWED_ORIGINS = ["http://localhost:8081"]
 
+SESSION_COOKIE_SECURE = False  # Set to True only if you're using HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+
 
 # Application definition
 

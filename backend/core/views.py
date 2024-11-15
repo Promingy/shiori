@@ -14,7 +14,7 @@ from django.middleware.csrf import get_token
 from .models import *
 from .serializers import *
 import random
-from fsrs import Card as fCard, Rating, FSRS
+from fsrs import FSRS, Rating, Card as f_card
 
 f = FSRS()
 
@@ -49,6 +49,8 @@ class Signup(CreateAPIView):
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        authenticate(username=request.data["email"], password=request.data["password"])
 
         profile_serializer = ProfileSerializer(data={"user": user}, context={"user": user})
 
@@ -67,10 +69,30 @@ class Signup(CreateAPIView):
         
         return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class Login(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            token_data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user' : UserSerializer(user).data
+            }
+
+            
+            return Response(token_data, status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class Logout(APIView):
     def post(self, request):
         logout(request)
+        print('logout')
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 class RandomCard(RetrieveUpdateAPIView):
@@ -98,7 +120,7 @@ class RandomCard(RetrieveUpdateAPIView):
         notes = Note.objects.filter(note_id=random_card.note.note_id)
 
         # Serialize the data
-        card_serializer = CardsSerializer(random_card)
+        card_serializer = CardSerializer(random_card)
         notes_serializer = NotesSerializer(notes, many=True)
 
         data = {
@@ -113,15 +135,35 @@ class RandomCard(RetrieveUpdateAPIView):
     def put(self, request):
         user = request.user
         new_card = self.get(request).data
+        
+        try:
+            card_reviewed = get_object_or_404(ReviewCard, id=request.data['id'])
+        except Exception as e:
+            card_reviewed = Card.objects.get(id=request.data['id'])
+            
+        card_level = request.data['level']
+        
+        card = f_card(card_reviewed)
+        rating = Rating[card_level]
 
-        card_reviewed = Card.objects.filter(card_id=request.data["card_id"])
+        card, review_log = f.review_card(card, rating)
 
+        # # Create Review Card from the card
+        review_card = ReviewCard.objects.create(
+            user = user,
+            id = card_reviewed.id,
+            card_id = card_reviewed.card_id,
+            note = card_reviewed.note,
+            deck = card_reviewed.deck,
+            due = card.due,
+            stability = card.stability,
+            difficulty = card.difficulty,
+            elapsed_days = card.elapsed_days,
+            scheduled_days = card.scheduled_days,
+            reps = card.reps,
+            lapses = card.lapses,
+            state = card.state,
+            last_review = card.last_review
+        )
 
-        print('~~~~~~~`', card_reviewed)
-        # testCard = fCard()
-        # testCard.id = request.data["card_id"]
-        # testCard.rating = request.data["rating"]
-
-
-        # Test response
         return Response(new_card, status=status.HTTP_200_OK)

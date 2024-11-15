@@ -12,7 +12,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     isLoading: false,
     error: null,
-    signup: async (first_name, last_name, email, password) => {
+    signup: async (first_name: string, last_name: string, email: string, password: string) => {
         set({isLoading: true, error: null});
 
         const requestOptions: RequestOptions = {
@@ -43,16 +43,52 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
     },
+    login: async (email: string, password: string) => {
+        set({isLoading: true, error: null});
+
+        const requestOptions: RequestOptions = {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({email, password}),
+        }
+
+        try {
+            const res = await fetch(`${API}/login/`, requestOptions);
+
+            if (res.ok){
+                const data = await res.json();
+    
+                localStorage.setItem('token', data.access)
+                localStorage.setItem('refresh', data.refresh)
+    
+                set({user: data.user});
+            }
+        }
+
+        catch (error) {
+            console.error("Error Logging In:", error);
+        }
+
+        finally {
+            set({isLoading: false});
+        }
+    },
     logout: async () => {
         const requestOptions: RequestOptions = {
             method: 'POST',
-            headers
+            headers,
+            credentials: 'include',
         }
 
         try {
             const res = await fetch(`${API}/logout/`, requestOptions);
 
-            if (res.ok) set({user: null});
+            if (res.ok) {
+                set({user: null});
+
+                localStorage.removeItem('token');
+                localStorage.removeItem('refresh');
+            } 
         }
 
         catch (error) {

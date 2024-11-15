@@ -10,17 +10,21 @@ export const useCardStore = create<FlashCards>((set) => ({
     isLoading: false,
     error: null,
     randomCard: null,
-    getRandomCard: async (method='GET', card_id?: number, level?: string)=> {
+    getRandomCard: async (method='GET', id?: number, level?: string)=> {
         set({isLoading: true, error: null});
 
+        const token = localStorage.getItem('token');
 
         const requestOptions: RequestOptions = {
             method,
-            headers,
+            headers: {
+                ...headers,
+                'Authorization': `Bearer ${token}`,
+            },
         }
 
         if (method == "PUT") {
-            requestOptions.body = JSON.stringify({card_id, level})
+            requestOptions.body = JSON.stringify({id, level})
         }
         
         try {

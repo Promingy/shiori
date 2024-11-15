@@ -42,9 +42,10 @@ export default function TabTwoScreen() {
     }
   }, [randomCard]); // Ensure this runs when randomCard changes
 
-  const handleSubmit = (level: string) => {
+  const handleSubmit = (level: string): void => {
+    if (!randomCard) return;
 
-    getRandomCard('PUT', randomCard?.card.card_id, level)
+    getRandomCard('PUT', randomCard.card.id, level)
     
     setFlipped(false)
   }

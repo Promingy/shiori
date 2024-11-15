@@ -30,15 +30,17 @@ class Note(models.Model):
     word_img        = models.TextField(blank=True, null=True)
     word_audio      = models.TextField(blank=True, null=True)
     sentence_audio  = models.TextField(blank=True, null=True)
-    tags            = models.TextField(blank=True, null=True)
 
 class Card(models.Model):
     card_id         = models.IntegerField()
     note            = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="card")
     deck            = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name="card")
-    order           = models.IntegerField()
-    type            = models.IntegerField()
-    queue           = models.IntegerField()
+
+class ReviewCard(models.Model):
+    user            = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviewCard")
+    card_id         = models.IntegerField()
+    note            = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="reviewCard")
+    deck            = models.ForeignKey(Deck, on_delete=models.CASCADE, related_name="reviewCard")
     due             = models.DateTimeField(blank=True, null=True, db_index=True)  # Indexed for faster due date queries
     stability       = models.FloatField(default=0.0, null=True, blank=True)  # Nullable for imported cards
     difficulty      = models.FloatField(default=0.0, null=True, blank=True)  # Nullable for imported cards
@@ -48,4 +50,3 @@ class Card(models.Model):
     lapses          = models.IntegerField(default=0, null=True, blank=True)
     state           = models.IntegerField(default=0, null=True, blank=True, db_index=True)  # Nullable and indexed for FSRS state
     last_review     = models.DateTimeField(blank=True, null=True)
-

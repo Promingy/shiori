@@ -24,10 +24,15 @@ class NotesSerializer(serializers.ModelSerializer):
                 ]
 
 
-class CardsSerializer(serializers.ModelSerializer):
+class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ['card_id', 'note', 'deck', 'type', 'order', 'queue', 'due']
+        fields = ['id','card_id', 'note', 'deck']
+
+class ReviewCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id','card_id', 'note', 'deck', 'due', 'stability', 'difficulty', 'elapsed_days', 'scheduled_days', 'reps', 'lapses', 'state', 'last_review']
 
 
 class UserSerializer(serializers.ModelSerializer):

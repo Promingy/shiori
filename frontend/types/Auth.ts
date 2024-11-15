@@ -23,6 +23,7 @@ export interface RequestOptions {
     method: "GET" | "POST" | "PUT" | "DELETE";
     headers: Record<string, string>;
     body?: string;
+    credentials?: "include";
 }
 
 interface user {
@@ -39,5 +40,5 @@ export interface AuthState {
     getUser: GetUserType;
     logout: LogoutType;
     tokenRefresh: TokenRefreshType;
-    // login: LoginType;
+    login: LoginType;
 }

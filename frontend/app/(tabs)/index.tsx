@@ -8,8 +8,9 @@ export default function SignupScreen() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(false);
 
-  const { signup, isLoading, user, logout} = useAuthStore();
+  const { signup, isLoading, user, logout, login} = useAuthStore();
 
   const handleSignup = () => {
     
@@ -29,6 +30,12 @@ export default function SignupScreen() {
     }
   };
 
+  const handleLogin = () => {
+    if (email && password) {
+      login(email, password);
+    }
+  }
+
   const handleLogout = () => {
     logout()
   }
@@ -38,6 +45,33 @@ export default function SignupScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>Welcome, {user.first_name}!</Text>
         <Button title="Sign Out" onPress={handleLogout} />
+      </View>
+    );
+  }
+
+  if (isLogin) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Login</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', gap: 25 }}>  
+          <Button title={isLoading ? 'Logging In...' : 'Login'} onPress={handleLogin} />
+          <Button title="Sign Up" onPress={() => setIsLogin(false)} /> 
+        </View>
       </View>
     );
   }
@@ -72,7 +106,11 @@ export default function SignupScreen() {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title={isLoading ? 'Signing Up...' : 'Sign Up'} onPress={handleSignup} />
+      <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', gap: 25 }}>
+        <Button title={isLoading ? 'Signing Up...' : 'Sign Up'} onPress={handleSignup} />
+        <Button title="Login" onPress={() => setIsLogin(true)} />
+
+      </View>
     </View>
   );
 }
