@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.auth import login, authenticate, logout
 from django.views import View
 from django.http import JsonResponse
@@ -15,7 +15,7 @@ from .models import *
 from .serializers import *
 import random
 from fsrs import FSRS, Rating, Card as f_card
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 f = FSRS()
 
@@ -23,12 +23,14 @@ f = FSRS()
 
 class GetUser(RetrieveAPIView):
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        if not user.is_authenticated:
-            return Response({"error": "User is not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+        # if not user.is_authenticated:
+        #     return Response({"error": "User is not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.serializer_class(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -74,7 +76,14 @@ class Login(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
+        user = authenticate(username=email, password=password)
 
+        # profile = Profile.objects.get(user=user)
+
+        # if profile is not None and date.today() > profile.last_card_reset:
+        #     profile.new_cards_today = 0
+        #     profile.last_card_reset = date.today()
+        #     profile.save()
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
@@ -91,16 +100,21 @@ class Login(APIView):
 
 
 class Logout(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request):
         logout(request)
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 class RandomCard(RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
+
+        if isinstance(user, AnonymousUser) :
+            return Response(self.get_random_card_limited(), status=status.HTTP_200_OK) 
+
+
         profile = get_object_or_404(Profile, user=user)
 
         # Get due review cards for the user
@@ -131,24 +145,18 @@ class RandomCard(RetrieveUpdateAPIView):
             random_card = random.choice(new_cards)
 
         # Get the notes corresponding to the card
-        # notes = Note.objects.filter(note_id=random_card.note.note_id)
         notes = Note.objects.filter(id=random_card.id)
 
-        # Serialize the data
-        card_serializer = CardSerializer(random_card)
-        notes_serializer = NotesSerializer(notes, many=True)
-
-        data = {
-            "card": card_serializer.data,
-            "notes": notes_serializer.data,
-            "daily_new_cards": profile.daily_new_cards,
-            "new_cards_today": profile.new_cards_today
-        }
+        data = self.serialize(random_card, notes, profile)
 
         return Response(data, status=status.HTTP_200_OK)
     
     def put(self, request):
         user = request.user
+
+        if isinstance(user, AnonymousUser):
+            return Response(self.get_random_card_limited(), status=status.HTTP_200_OK)
+
         new_card = self.get(request).data
         
         try:
@@ -159,9 +167,7 @@ class RandomCard(RetrieveUpdateAPIView):
             card = f_card(card_reviewed)
 
         card_level = request.data['level']
-        
         rating = Rating[card_level]
-
         card, review_log = f.review_card(card, rating)
 
         # # Create Review Card from the card
@@ -185,3 +191,38 @@ class RandomCard(RetrieveUpdateAPIView):
         )
 
         return Response(new_card, status=status.HTTP_200_OK)
+
+    def get_random_card_limited(self):
+        """
+        Fetch a random card for anonymous users.
+        """
+        cards = Card.objects.all()
+
+        if not cards.exists():
+            return {"message": "No cards available."}
+
+        random_card = random.choice(cards)
+        notes = Note.objects.filter(id=random_card.note.id)
+
+        return self.serialize_card_and_notes(random_card, notes)
+    
+    def serialize_card_and_notes(self, card, notes, profile=None):
+        """
+        Helper method to serialize card and notes data.
+        """
+
+        serialized_card = CardSerializer(card)
+        serialized_notes = NotesSerializer(notes, many=True)
+
+        data = {
+            "card": serialized_card.data,
+            "notes": serialized_notes.data
+        }
+
+        if profile:
+            data.update({
+                "daily_new_cards": profile.daily_new_cards,
+                "new_card_today": profile.new_cards_today
+            })
+        
+        return data

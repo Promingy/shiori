@@ -84,7 +84,7 @@ class RandomCardTestCase(TestCase):
             reps=0,
             lapses=0,
             state=0,
-            last_review=self.now - timedelta(days=1),
+            last_review=self.now - timedelta(days=15),
         )
         
         # Current due date card
@@ -101,7 +101,7 @@ class RandomCardTestCase(TestCase):
             reps=0,
             lapses=0,
             state=0,
-            last_review=self.now,
+            last_review=self.now - timedelta(days=1),
         )
         
         # Future due date card
@@ -118,7 +118,7 @@ class RandomCardTestCase(TestCase):
             reps=0,
             lapses=0,
             state=0,
-            last_review=self.now + timedelta(days=1),
+            last_review=self.now,
         )
         
         
@@ -135,33 +135,18 @@ class RandomCardTestCase(TestCase):
         # Simulate pick_review_card being True or False randomly
         mock_random_choice.side_effect = lambda x: x[0]  # Mock to always pick the first item
         
-        # Create due review cards (past or current)
-        due_review_cards = ReviewCard.objects.filter(user=self.user, due__lte=self.now)
+        response = self.client.get(reverse('random_card'))
+        # Ensure the response is OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        # Ensure there are due cards
-        self.assertTrue(due_review_cards.exists())
+        # Ensure the response contains both "card" and "notes"
+        self.assertIn('card', response.data)
+        self.assertIn('notes', response.data)
         
-        # Mock profile conditions
-        self.profile.new_cards_today = 3  # Ensure it's less than the daily limit
-        self.profile.save()
-        
-        # Test scenario where a due review card is picked
-        if due_review_cards.exists():
-            response = self.client.get(reverse('random_card'))
-            # Ensure the response is OK
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
-            # Ensure the response contains both "card" and "notes"
-            self.assertIn('card', response.data)
-            self.assertIn('notes', response.data)
-            
-            # Assert that the response contains either of the two due review cards, not just the first one
-            card_id = response.data['card']['id']
-            self.assertIn(card_id, [self.past_due_card.id, self.current_due_card.id])
+        # Assert that the response contains either of the two due review cards, not just the first one
+        card_id = response.data['card']['id']
+        self.assertIn(card_id, [self.past_due_card.id, self.current_due_card.id])
 
-        # Now, simulate the "No more cards to learn today" scenario (if the daily limit is reached)
-        self.profile.new_cards_today = self.profile.daily_new_cards
-        self.profile.save()
 
 
 
@@ -233,10 +218,10 @@ class RandomCardTestCase(TestCase):
         self.assertEqual(review_card.state, 2)
 
     def test_query_review_cards_due_now(self):
-        # Query for review cards due now (using explicit UTC time)
+        # Query for review cards due now / past due (using explicit UTC time)
         due_review_cards = ReviewCard.objects.filter(user=self.user, due__lte=self.now)
 
-        # Assert that only the card due now is returned
+        # Assert that cards that are due / past due now are returned
         self.assertEqual(due_review_cards.count(), 2)
         self.assertIn(self.current_due_card, due_review_cards)
         self.assertIn(self.past_due_card, due_review_cards)
