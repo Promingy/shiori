@@ -91,18 +91,21 @@ class Login(APIView):
 
 
 class Logout(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         logout(request)
-        print('logout')
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 class RandomCard(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
         profile = get_object_or_404(Profile, user=user)
 
         # Get due review cards for the user
-        due_review_cards = ReviewCard.objects.filter(user=user, due=datetime.now(timezone.utc))
+        #__lte is less than or equal
+        due_review_cards = ReviewCard.objects.filter(user=user, due__lte=datetime.now(timezone.utc)) 
 
         # Decide randomly whether to pick a review card or a new card
         pick_review_card = random.choice([True, False])
@@ -118,7 +121,8 @@ class RandomCard(RetrieveUpdateAPIView):
             profile.save()
 
             # Get all new cards
-            new_cards = Card.objects.all()
+            reviewed_card_ids = ReviewCard.objects.filter(user=user).values_list('id', flat=True)
+            new_cards = Card.objects.exclude(id__in=reviewed_card_ids)
 
             if not new_cards:
                 return Response({"error": "No Cards found"}, status=status.HTTP_404_NOT_FOUND)

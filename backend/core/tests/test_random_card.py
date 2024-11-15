@@ -7,7 +7,7 @@ from core.models import Profile, Card, ReviewCard, Note, Deck
 from rest_framework_simplejwt.tokens import RefreshToken
 from core.views import RandomCard
 from django.urls import reverse
-from datetime import datetime, timezone as tz
+from datetime import datetime, timedelta, timezone as tz
 from unittest.mock import patch
 import random
 
@@ -64,37 +64,62 @@ class RandomCardTestCase(TestCase):
 
         self.card1 = Card.objects.create(note=self.note1, card_id=1, deck=self.deck)
         self.card2 = Card.objects.create(note=self.note2, card_id=2, deck=self.deck)
+        self.card3 = Card.objects.create(id=3, note=self.note2, card_id=3, deck=self.deck)
+        self.card4 = Card.objects.create(id=4, note=self.note2, card_id=4, deck=self.deck)
+        self.card5 = Card.objects.create(id=5, note=self.note2, card_id=5, deck=self.deck)
 
-        self.review_card1 = ReviewCard.objects.create(
-                                                    user=self.user,
-                                                    card_id=self.card1.id,
-                                                    note=self.note1,
-                                                    deck=self.deck,
-                                                    due=datetime.now(tz.utc),
-                                                    stability=0,
-                                                    difficulty=0,
-                                                    elapsed_days=0,
-                                                    scheduled_days=0,
-                                                    reps=0,
-                                                    lapses=0,
-                                                    state=0,
-                                                    last_review=datetime.now(tz.utc),
-                                                )
-        self.review_card2 = ReviewCard.objects.create(
-                                                    user=self.user,
-                                                    card_id=self.card2.id,
-                                                    note=self.note2,
-                                                    deck=self.deck,
-                                                    due=datetime.now(tz.utc),
-                                                    stability=0,
-                                                    difficulty=0,
-                                                    elapsed_days=0,
-                                                    scheduled_days=0,
-                                                    reps=0,
-                                                    lapses=0,
-                                                    state=0,
-                                                    last_review=datetime.now(tz.utc),
-                                                )
+
+        self.now = datetime.now(tz.utc)
+        # Past due date card
+        self.past_due_card = ReviewCard.objects.create(
+            user=self.user,
+            card_id=self.card1.id,
+            note=self.note1,
+            deck=self.deck,
+            due=self.now - timedelta(days=1),
+            stability=0,
+            difficulty=0,
+            elapsed_days=0,
+            scheduled_days=0,
+            reps=0,
+            lapses=0,
+            state=0,
+            last_review=self.now - timedelta(days=1),
+        )
+        
+        # Current due date card
+        self.current_due_card = ReviewCard.objects.create(
+            user=self.user,
+            card_id=self.card2.id,
+            note=self.note2,
+            deck=self.deck,
+            due=self.now,
+            stability=0,
+            difficulty=0,
+            elapsed_days=0,
+            scheduled_days=0,
+            reps=0,
+            lapses=0,
+            state=0,
+            last_review=self.now,
+        )
+        
+        # Future due date card
+        self.future_due_card = ReviewCard.objects.create(
+            user=self.user,
+            card_id=self.card2.id,
+            note=self.note2,
+            deck=self.deck,
+            due=self.now + timedelta(days=1),
+            stability=0,
+            difficulty=0,
+            elapsed_days=0,
+            scheduled_days=0,
+            reps=0,
+            lapses=0,
+            state=0,
+            last_review=self.now + timedelta(days=1),
+        )
         
         
         # Set up the client
@@ -105,12 +130,24 @@ class RandomCardTestCase(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
 
-    def test_get_random_review_card(self):
+    @patch('random.choice')
+    def test_get_random_review_card(self, mock_random_choice):
+        # Simulate pick_review_card being True or False randomly
+        mock_random_choice.side_effect = lambda x: x[0]  # Mock to always pick the first item
         
-        # Mock random.choice to avoid real randomness in test
-        with self.settings(RANDOM_CHOICE=lambda x: x[0]):
+        # Create due review cards (past or current)
+        due_review_cards = ReviewCard.objects.filter(user=self.user, due__lte=self.now)
+        
+        # Ensure there are due cards
+        self.assertTrue(due_review_cards.exists())
+        
+        # Mock profile conditions
+        self.profile.new_cards_today = 3  # Ensure it's less than the daily limit
+        self.profile.save()
+        
+        # Test scenario where a due review card is picked
+        if due_review_cards.exists():
             response = self.client.get(reverse('random_card'))
-            
             # Ensure the response is OK
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             
@@ -118,18 +155,25 @@ class RandomCardTestCase(TestCase):
             self.assertIn('card', response.data)
             self.assertIn('notes', response.data)
             
-            # Assert that the response contains either of the two review cards, not just the first one
+            # Assert that the response contains either of the two due review cards, not just the first one
             card_id = response.data['card']['id']
-            self.assertIn(card_id, [self.review_card1.id, self.review_card2.id])
+            self.assertIn(card_id, [self.past_due_card.id, self.current_due_card.id])
+
+        # Now, simulate the "No more cards to learn today" scenario (if the daily limit is reached)
+        self.profile.new_cards_today = self.profile.daily_new_cards
+        self.profile.save()
 
 
 
-    from unittest.mock import patch
 
-    def test_get_random_new_card(self):
+    @patch('random.choice')
+    def test_get_random_new_card(self, mock_random_choice):
+
+            mock_random_choice.side_effect = lambda x: x[1]  # Mock to always pick the second item
+
 
         # Mock random.choice to always pick a new card (second element in the list)
-        with patch('random.choice', side_effect=[self.review_card1, self.card2]):
+        # with patch('random.choice', side_effect=[self.past_due_card, self.card2]):
             response = self.client.get(reverse('random_card'))
 
             # Ensure the response is OK
@@ -140,7 +184,7 @@ class RandomCardTestCase(TestCase):
             self.assertIn('notes', response.data)
             
             # Check if the returned card is indeed the new card (card2)
-            self.assertEqual(response.data['card']['id'], self.card2.id)
+            self.assertEqual(response.data['card']['id'], self.card5.id)
             
             # Verify that the profile's new_cards_today has been incremented
             self.profile.refresh_from_db()
@@ -150,6 +194,13 @@ class RandomCardTestCase(TestCase):
     def test_no_more_new_cards_today(self):
         self.profile.new_cards_today = self.profile.daily_new_cards
         self.profile.save()
+        #update due cards to not be due
+        self.past_due_card.due = datetime.now(tz.utc) + timedelta(days=30)
+        self.current_due_card.due = datetime.now(tz.utc) + timedelta(days=30)
+
+        self.past_due_card.save()
+        self.current_due_card.save()
+        
         response = self.client.get(reverse('random_card'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], "No more cards to learn today")
@@ -163,13 +214,13 @@ class RandomCardTestCase(TestCase):
 
     def test_put_review_card(self):
         data = {
-            'id': self.review_card1.id,
+            'id': self.past_due_card.id,
             'level': 'Easy'
         }
         response = self.client.put(reverse('random_card'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.review_card1.refresh_from_db()
-        self.assertEqual(self.review_card1.state, 2)
+        self.past_due_card.refresh_from_db()
+        self.assertEqual(self.past_due_card.state, 2)
 
     def test_put_new_card(self):
         data = {
@@ -180,3 +231,13 @@ class RandomCardTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         review_card = ReviewCard.objects.get(card_id=self.card1.id)
         self.assertEqual(review_card.state, 2)
+
+    def test_query_review_cards_due_now(self):
+        # Query for review cards due now (using explicit UTC time)
+        due_review_cards = ReviewCard.objects.filter(user=self.user, due__lte=self.now)
+
+        # Assert that only the card due now is returned
+        self.assertEqual(due_review_cards.count(), 2)
+        self.assertIn(self.current_due_card, due_review_cards)
+        self.assertIn(self.past_due_card, due_review_cards)
+        self.assertNotIn(self.future_due_card, due_review_cards)
