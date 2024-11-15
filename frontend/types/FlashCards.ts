@@ -1,8 +1,8 @@
 // Types
-type getRandomCard = (method?: "GET"| "PUT", id?: number, level?: string) => Promise<void>
+type GetRandomCard = (method?: "GET"| "PUT", id?: number, level?: string) => Promise<void>
 
 // Interfaces
-interface note {
+interface Note {
     note_id: number;
     model_id: number;
     modified: number;
@@ -16,26 +16,22 @@ interface note {
     sentence_audio: string;
 }
 
-interface card{
+interface Card{
     id: number;
     card_id: number;
     note: number;
     deck: number;
-    type: number;
-    order: number;
-    queue: number;
-    due: number;
 }
 
-interface randomCard {
-    card: card;
-    notes: note[];
-
+export interface RandomCard {
+    card: Card;
+    notes: Note[];
+    message?: string;
 }
 
 export interface FlashCards {
     isLoading: boolean;
     error: string | null;
-    randomCard: randomCard | null;
-    getRandomCard: getRandomCard;
+    randomCard: RandomCard | null;
+    getRandomCard: GetRandomCard;
 }

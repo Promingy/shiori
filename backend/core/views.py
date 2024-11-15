@@ -15,6 +15,7 @@ from .models import *
 from .serializers import *
 import random
 from fsrs import FSRS, Rating, Card as f_card
+from datetime import datetime, timezone
 
 f = FSRS()
 
@@ -97,30 +98,37 @@ class Logout(APIView):
 
 class RandomCard(RetrieveUpdateAPIView):
     def get(self, request):
-        # user = request.user
-        # profile = get_object_or_404(Profile, user=user)
+        user = request.user
+        profile = get_object_or_404(Profile, user=user)
 
+        # Get due review cards for the user
+        due_review_cards = ReviewCard.objects.filter(user=user, due=datetime.now(timezone.utc))
 
-        # if profile.new_cards_today >= profile.daily_new_cards:
-        #     return Response({"message": "No more cards to learn today"}, status=status.HTTP_200_OK)
+        # Decide randomly whether to pick a review card or a new card
+        pick_review_card = random.choice([True, False])
 
-        # profile.new_cards_today += 1
-        # profile.save()
+        if (pick_review_card or profile.new_cards_today >= profile.daily_new_cards) and due_review_cards.exists():
+            # Pick a random due review card
+            random_card = random.choice(due_review_cards)
+        else:
+            if profile.new_cards_today >= profile.daily_new_cards:
+                return Response({"message": "No more cards to learn today"}, status=status.HTTP_200_OK)
 
-        # Get all cards
-        cards = Card.objects.all()
+            profile.new_cards_today += 1
+            profile.save()
 
-        if not cards:
-            return Response({"error": "No Cards found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        # pick a random card
-        # random_card = random.choice(cards)
+            # Get all new cards
+            new_cards = Card.objects.all()
 
-        # Get Same Card Everytime
-        random_card = cards.first()
+            if not new_cards:
+                return Response({"error": "No Cards found"}, status=status.HTTP_404_NOT_FOUND)
 
-        #  Get the notes corresponding to the card
-        notes = Note.objects.filter(note_id=random_card.note.note_id)
+            # Pick a random new card
+            random_card = random.choice(new_cards)
+
+        # Get the notes corresponding to the card
+        # notes = Note.objects.filter(note_id=random_card.note.note_id)
+        notes = Note.objects.filter(id=random_card.id)
 
         # Serialize the data
         card_serializer = CardSerializer(random_card)
@@ -129,8 +137,8 @@ class RandomCard(RetrieveUpdateAPIView):
         data = {
             "card": card_serializer.data,
             "notes": notes_serializer.data,
-            # "daily_new_cards": profile.daily_new_cards,
-            # "new_cards_today": profile.new_cards_today
+            "daily_new_cards": profile.daily_new_cards,
+            "new_cards_today": profile.new_cards_today
         }
 
         return Response(data, status=status.HTTP_200_OK)

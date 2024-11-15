@@ -50,14 +50,16 @@ export default function TabTwoScreen() {
     setFlipped(false)
   }
 
+  if (!randomCard) return null;
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Random Card</Text>
       
       {/* Card container with animated flip */}
-      <TouchableOpacity onPress={() => setFlipped(!flipped)}>
+      <TouchableOpacity disabled={!!randomCard.message} onPress={() => setFlipped(!flipped)}>
         <View style={styles.card}>
-          {randomCard ? (
+          {randomCard && randomCard.card ? (
             <>
               {!flipped ? (
                 <View style={[styles.cardContent]}>
@@ -85,9 +87,9 @@ export default function TabTwoScreen() {
               )}
             </>
           ) : (
-            <View style={[styles.cardContent]}>
-              <Text>Loading...</Text>
-            </View>
+              <View style={[styles.cardContent]}>
+                <Text>{randomCard?.message || "Loading..."}</Text>
+              </View>
           )}
         </View>
       </TouchableOpacity>
