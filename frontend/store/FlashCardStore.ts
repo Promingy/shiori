@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { FlashCards } from '@/types/FlashCards';
 import { RequestOptions } from '@/types/Auth';
+import { useAuthStore } from './AuthStore';
 import { API } from '@env';
 
 const headers = {
@@ -12,6 +13,7 @@ export const useCardStore = create<FlashCards>((set) => ({
     randomCard: null,
     getRandomCard: async (method='GET', id?: number, level?: string)=> {
         set({isLoading: true, error: null});
+        const { user } = useAuthStore.getState();
 
         const token = localStorage.getItem('token');
 
@@ -19,8 +21,15 @@ export const useCardStore = create<FlashCards>((set) => ({
             method,
             headers: {
                 ...headers,
-                'Authorization': `Bearer ${token}`,
+                // 'Authorization': `Bearer ${token}`,
             },
+        }
+
+        if (user) {
+            requestOptions.headers = {
+                ...headers,
+                'Authorization': `Bearer ${token}`,
+            }
         }
 
         if (method == "PUT") {

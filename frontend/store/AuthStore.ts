@@ -12,6 +12,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     isLoading: false,
     error: null,
+    hasRefreshed: false,
     signup: async (first_name: string, last_name: string, email: string, password: string) => {
         set({isLoading: true, error: null});
 
@@ -117,13 +118,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             } 
 
             else if (res.status === 401) {
-                get().tokenRefresh();
+                // only refresh token once
+                const hasRefreshed = get().hasRefreshed || false;
+                
+                if (!hasRefreshed) {
+                    set({hasRefreshed: true})
+                    await get().tokenRefresh();
+                    await get().getUser();
+                }
+                
+                else {
+                    get().logout();
+                    console.error("Unauthorized; Logging out after failed retry.");
+                }
+            } 
+            
+            else {
+                console.error(`Error Fetching User: ${res.status}`);
             }
         } 
 
         catch (error) {
-            get().logout;
-            console.error("Error Fetching User, Logging Out:'", error);
+            get().logout();
+            console.error("Error Fetching User, Logging Out:", error);
         } 
 
         finally {

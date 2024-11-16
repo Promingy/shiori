@@ -50,6 +50,8 @@ export default function TabTwoScreen() {
     setFlipped(false)
   }
 
+  console.log("~!!!!!!!!!!!!!!", randomCard)
+
   if (!randomCard) return null;
 
   return (

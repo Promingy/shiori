@@ -36,6 +36,7 @@ export interface AuthState {
     user: user | null;
     isLoading: boolean;
     error: string | null;
+    hasRefreshed: boolean;
     signup: SignupType;
     getUser: GetUserType;
     logout: LogoutType;
