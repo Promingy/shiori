@@ -35,15 +35,18 @@ export const useCardStore = create<FlashCards>((set) => ({
         if (method == "PUT") {
             requestOptions.body = JSON.stringify({id, level})
         }
-        
+
         try {
             const res = await fetch(`${BASE_URL}/random_card/`, requestOptions)
-            
+            const data = await res.json();
+
             if (res.ok) {
-                const data = await res.json();
                 set({randomCard: data});
             }
-        } 
+            else {
+                // console.log(data)
+            }
+        }
 
         catch (error: unknown) {
             if (error instanceof Error) {
@@ -51,7 +54,7 @@ export const useCardStore = create<FlashCards>((set) => ({
             } else {
                 set({error: 'An unknown error occurred.'});
             }
-        } 
+        }
 
         finally {
             set({isLoading: false});

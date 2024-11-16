@@ -3,9 +3,10 @@ from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.utils import timezone
-from core.models import Profile, Card, ReviewCard, Note, Deck
+from core.models import Card, ReviewCard, Note, Deck
+from user_auth.models import Profile
 from rest_framework_simplejwt.tokens import RefreshToken
-from core.views import RandomCard
+from core.views import RandomCardView
 from django.urls import reverse
 from datetime import datetime, timedelta, timezone as tz
 from unittest.mock import patch
@@ -187,15 +188,15 @@ class RandomCardTestCase(TestCase):
         self.current_due_card.save()
         
         response = self.client.get(reverse('random_card'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], "No more cards to learn today")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], "No more cards to learn today.")
 
     def test_no_cards_found(self):
         Card.objects.all().delete()
         ReviewCard.objects.all().delete()
         response = self.client.get(reverse('random_card'))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.data['error'], "No Cards found")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], "No new cards found.")
 
     def test_put_review_card(self):
         data = {
