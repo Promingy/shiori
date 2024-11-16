@@ -13,7 +13,7 @@ export default function Chat() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Welcome to Chat</Text>
-            <Button title="Click Me" onPress={handleSubmit} color="#6200EE" />
+            <Button title="Click Me" onPress={handleSubmit} color="#FFC0CB" />
         </View>
     );
 }
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F5F5F5', // Light background
+        backgroundColor: '#FFFFF0', // Light background
         padding: 16,
     },
     title: {

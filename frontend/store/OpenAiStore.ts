@@ -13,20 +13,26 @@ const useAIStore = create<OpenAiStore>((set, get): OpenAiStore => ({
     testRequest: async (content: string) => {
         const hasSent = get().hasSent;
 
+        const token = localStorage.getItem('token');
+
         const requestOptions: RequestOptions = {
-            method: "POST",
-            headers,
+            method: "GET",
+            headers: {
+                ...headers,
+                "Authorization": `Bearer ${token}`
+            },
             // body: JSON.stringify({content})
         };
 
         console.log('test', content)
+        console.log(`${BASE_URL}/api/chat/test/`)
 
         if (!hasSent) {
             set({hasSent: true})
 
             try {
                 // const res = await fetch('https://api.openai.com/v1/chat/completions', requestOptions);
-                const res = await fetch(`${BASE_URL}/api/chat/test/`, requestOptions)
+                const res = await fetch(`${BASE_URL}/chat/test/`, requestOptions)
 
                 // if (res.ok) {
                 //     const data = res.json();
