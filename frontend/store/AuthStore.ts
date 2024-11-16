@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { AuthState, RequestOptions } from '@/types/Auth';
-import { API } from '@env';
+import { BASE_URL } from '@env';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${API}/signup/`, requestOptions);
+            const res = await fetch(`${BASE_URL}/signup/`, requestOptions);
 
             if (res.ok){
                 const data = await res.json();
@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${API}/login/`, requestOptions);
+            const res = await fetch(`${BASE_URL}/login/`, requestOptions);
 
             if (res.ok){
                 const data = await res.json();
@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${API}/logout/`, requestOptions);
+            const res = await fetch(`${BASE_URL}/logout/`, requestOptions);
 
             if (res.ok) {
                 set({user: null});
@@ -110,7 +110,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${API}/user/`, requestOptions);
+            const res = await fetch(`${BASE_URL}/user/`, requestOptions);
     
             if (res.ok) {
                 const data = await res.json();
@@ -162,7 +162,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
         
         try {
-            const rest = await fetch(`${API}/token/refresh/`, requestOptions);
+            const rest = await fetch(`${BASE_URL}/token/refresh/`, requestOptions);
     
             if (rest.ok) {
                 const data = await rest.json();
