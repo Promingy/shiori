@@ -34,6 +34,15 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SECURE = False  # Set to True only if you're using HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND"; "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "HOSTS": [("127.0.0.1", 6379)]
+        }
+    }
+}
+
 
 
 # Application definition
@@ -47,8 +56,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "channels_redis",
     "core",
-    "chat"
+    "chat",
     "user_auth",
 ]
 

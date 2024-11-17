@@ -5,7 +5,6 @@ from rest_framework import status
 from pathlib import Path
 import openai
 
-
 # Create your views here.
 class Test(APIView):
     def get(self, request, *args, **kwargs):

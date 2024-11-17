@@ -1,19 +1,28 @@
-import React from 'react';
-import { Button, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { Button, StyleSheet, View, TextInput } from 'react-native';
 import useAIStore from '@/store/OpenAiStore';
 import { Text } from '@/components/Themed';
 
 export default function Chat() {
     const { testRequest } = useAIStore();
+    const [aiText, setAiText] = useState("")
 
-    const handleSubmit = () => {
-        testRequest("I'm a test");
+    const handleSubmit = (content: string) => {
+        testRequest(content);
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Welcome to Chat</Text>
-            <Button title="Click Me" onPress={handleSubmit} color="#FFC0CB" />
+            <TextInput 
+                style={styles.textArea}
+                multiline={true}
+                numberOfLines={4}
+                placeholder="Send Mesasge to AI"
+                value={aiText}
+                onChangeText={setAiText}
+            />
+            <Button disabled={!aiText} title="Send" onPress={() => handleSubmit(aiText)} color="#FFC0CB" />
         </View>
     );
 }
@@ -32,4 +41,14 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         color: '#333', // Neutral text color
     },
+    textArea: {
+        height: 100,
+        width: '100%',
+        borderColor: 'gray',
+        borderWidth: 1,
+        borderRadius: 5,
+        padding: 10,
+        textAlignVertical: 'top',
+        marginBottom: 20,
+    }
 });
