@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, StyleSheet, View, TextInput } from 'react-native';
 import useAIStore from '@/store/OpenAiStore';
 import { Text } from '@/components/Themed';
 
 export default function Chat() {
-    const { testRequest } = useAIStore();
+    const { testRequest, initializeWebSocket, cleanup } = useAIStore();
     const [aiText, setAiText] = useState("")
 
     const handleSubmit = (content: string) => {
         testRequest(content);
     };
+
+    useEffect(() => {
+        initializeWebSocket();
+        return () => cleanup();
+    }, [])
 
     return (
         <View style={styles.container}>
