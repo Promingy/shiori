@@ -1,8 +1,12 @@
 // Types
-export type TestRequest = (content: string) => Promise<void>
+export type initializeWebsSocket = (content: string) => void
 
 // Interfaces
 export interface OpenAiStore {
     hasSent: boolean;
-    testRequest: TestRequest;
+    ws: any;
+    authenticated: boolean;
+    initializeWebSocket: initializeWebsSocket;
+    testRequest: () => void;
+    cleanup: () => void;
 }
