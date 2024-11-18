@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Button, View } from 'react-native';
 import { S3_BUCKET } from '@env';
+import { WavRecorder } from '@/wavtools/index.js';
 
 interface AudioPlayerProps {
     fileName: string;
@@ -31,17 +32,22 @@ export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
     };
 
     const playAudio = async (uri: string) => {
-        if (sound && sound._loaded) {
-            sound.playAsync();
-        } else {
-            const { sound } = await Audio.Sound.createAsync(
-                { uri },
-                { shouldPlay: true },
-                handlePlaybackStatusUpdate
-            );
-            setSound(sound);
+        try {
+            if (sound && sound._loaded) {
+                sound.playAsync();
+            } else {
+                const { sound } = await Audio.Sound.createAsync(
+                    { uri },
+                    { shouldPlay: true },
+                    handlePlaybackStatusUpdate
+                );
+                setSound(sound);
+            }
+            setIsPlaying(true);
         }
-        setIsPlaying(true);
+        catch (error) {
+            console.error('Failed to play audio:', error)
+        }
     };
 
     const stopAudio = async () => {

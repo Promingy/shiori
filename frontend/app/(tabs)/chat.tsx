@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Button, StyleSheet, View, TextInput, ScrollView } from 'react-native';
 import useAIStore from '@/store/OpenAiStore';
 import { Text } from '@/components/Themed';
-import { audioChunks, handleAudioDelta, handleAudioDone } from '@/helpers/decodeAudio';
+import Test from '@/components/test'
+// import { audioChunks, handleAudioDelta, handleAudioDone } from '@/helpers/decodeAudio';
+import Audio from '@/audio.json'
 import AudioPlayer from '@/components/AudioPlayer';
+
+const audioChunk = [Audio["1"], Audio["2"]]
 
 export default function Chat() {
     const { testRequest, initializeWebSocket, cleanup, transcript } = useAIStore();
@@ -81,7 +85,7 @@ export default function Chat() {
                     onPress={() => handleSubmit(aiText)} 
                     color="#FFC0CB" 
                 /> */}
-                <Button 
+                {/* <Button 
                     title={"Decode Audio"} 
                     onPress={async () => {
                         // let decodedAudio = []
@@ -94,13 +98,15 @@ export default function Chat() {
                         )
 
                         const uri = await handleAudioDone(decodedAudio)
-                        setAudioUri(uri)
+
+                        if (uri) setAudioUri(uri)
                     }} 
                     color="#000000" 
-                />
-                {audioUri &&
-                    <AudioPlayer fileName={audioUri} fromAi={true}/>
-                }
+                /> */}
+                {/* {audioUri && */}
+                {/* <AudioPlayer fileName={audioChunk[0]} fromAi={true}/> */}
+                {/* } */}
+                <Test fileName={audioChunk[0]}/>
             </View>
         </View>
     );
