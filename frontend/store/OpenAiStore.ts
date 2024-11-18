@@ -12,7 +12,7 @@ const headers = {
 const useAIStore = create<OpenAiStore>((set, get) => ({
     ws: null,
     authenticated: false,
-    transcript: [],
+    transcript: null,
     initializeWebSocket: () => {
         console.log("Initializing websocket...");
         // Make sure any existing connection is closed
@@ -53,12 +53,8 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
                     console.error('WebSocket authentication failed');
                     get().cleanup();
                 }
-                else if (data.type === 'response.audio_transcript.delta'){
-                    console.log('data.delta', data.delta)
-                    newTranscript.push(data.delta)
-                    set({transcript: newTranscript})
-
-                    console.log('should be updated transcript', get().transcript)
+                else if (data.type === 'response.audio_transcript.done'){
+                    set({transcript: data.transcript})
                 }
             } catch (error) {
                 console.error(`Error parsing message:`, error);
@@ -80,7 +76,7 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
     testRequest: async (content: string) => {
         const ws = get().ws;
         const authenticated = get().authenticated
-        set({transcript: []})
+        set({transcript: null})
 
         if (!ws || !authenticated) {
             console.error('WebSocket not connected or authenticated');
@@ -88,7 +84,7 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
         }
 
         ws.send(JSON.stringify({
-            type: 'response.create',
+            type: 'message',
             content: content
         }))
         

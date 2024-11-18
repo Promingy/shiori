@@ -12,13 +12,13 @@ export default function Chat() {
     const handleSubmit = async (content: string) => {
         setIsLoading(true);
         setMessages(prev => [...prev, {type: 'user', content}])
-        // await testRequest(content);
+        await testRequest(content);
         
         setAiText(""); // Clear input after sending
-        setTimeout(() => {
-            setMessages(prev => [...prev, {type: 'ai', content: `Test response to ${content}`}])
-            setIsLoading(false)
-        }, 5000)
+        // setTimeout(() => {
+        //     setMessages(prev => [...prev, {type: 'ai', content: `Test response to ${content}`}])
+        //     setIsLoading(false)
+        // }, 5000)
     };
 
     useEffect(() => {
@@ -27,8 +27,8 @@ export default function Chat() {
     }, []);
 
     useEffect(() => {
-        if (transcript.length && 'whatever teh response is when it stops sending a message') {
-            setMessages(prev => [...prev, {type: 'ai', content: transcript.join("")}])
+        if (transcript) {
+            setMessages(prev => [...prev, {type: 'ai', content: transcript}])
         }
     }, [transcript])
 
@@ -107,14 +107,14 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     aiMessage: {
-        backgroundColor: '#F0F8FF',
+        backgroundColor: '#D9D9D6',
         borderRadius: 8,
         padding: 12,
     },
     messageLabel: {
         fontWeight: 'bold',
         marginBottom: 4,
-        color: '#666',
+        color: '#1C1C1C',
     },
     messageText: {
         color: '#333',
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     audioPlayer: {
         marginTop: 8,
         padding: 8,
-        backgroundColor: '#E6E6FA',
+        backgroundColor: '#A0C1D1',
         borderRadius: 4,
     },
     inputContainer: {

@@ -5,7 +5,7 @@ export type initializeWebsSocket = () => void
 export interface OpenAiStore {
     ws: any;
     authenticated: boolean;
-    transcript: string[]
+    transcript: string | null;
     initializeWebSocket: initializeWebsSocket;
     testRequest: (content: string) => Promise<void>;
     cleanup: () => void;
