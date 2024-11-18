@@ -7,6 +7,7 @@ export interface OpenAiStore {
     authenticated: boolean;
     transcript: string | null;
     initializeWebSocket: initializeWebsSocket;
+    receivedAudio: string[];
     testRequest: (content: string) => Promise<void>;
     cleanup: () => void;
 }

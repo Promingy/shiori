@@ -57,6 +57,9 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
                 else if (data.type === 'response.audio_transcript.done'){
                     set({transcript: data.transcript})
                 }
+                else if (data.type === 'response.audio.delta'){
+                    set({receivedAudio: [...get().receivedAudio, data.delta]})
+                }
             } catch (error) {
                 console.error(`Error parsing message:`, error);
             }
@@ -77,7 +80,7 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
     testRequest: async (content: string) => {
         const ws = get().ws;
         const authenticated = get().authenticated
-        set({transcript: null})
+        set({transcript: null, receivedAudio: []})
 
         if (!ws || !authenticated) {
             console.error('WebSocket not connected or authenticated');

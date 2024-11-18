@@ -2,19 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Button, StyleSheet, View, TextInput, ScrollView } from 'react-native';
 import useAIStore from '@/store/OpenAiStore';
 import { Text } from '@/components/Themed';
-import Test from '@/components/test'
-// import { audioChunks, handleAudioDelta, handleAudioDone } from '@/helpers/decodeAudio';
 import Audio from '@/audio.json'
-import AudioPlayer from '@/components/AudioPlayer';
+import RealtimeAudioPlayer from '@/components/RealtimeAudioPlayer';
 
 const audioChunk = [Audio["1"], Audio["2"]]
 
 export default function Chat() {
-    const { testRequest, initializeWebSocket, cleanup, transcript } = useAIStore();
+    const { testRequest, initializeWebSocket, cleanup, transcript, receivedAudio } = useAIStore();
     const [aiText, setAiText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [messages, setMessages] = useState<any[]>([]);
-    const [audioUri, setAudioUri] = useState("")
 
     const handleSubmit = async (content: string) => {
         setIsLoading(true);
@@ -34,10 +31,15 @@ export default function Chat() {
     }, []);
 
     useEffect(() => {
-        if (transcript) {
+        if (transcript && receivedAudio) {
+            setMessages(prev => [...prev, {type: 'ai', content: transcript, audioArr: receivedAudio}])
+        }
+        else if (transcript) {
             setMessages(prev => [...prev, {type: 'ai', content: transcript}])
         }
     }, [transcript])
+
+    console.log('audio length', receivedAudio.length)
 
     return (
         <View style={styles.container}>
@@ -54,15 +56,15 @@ export default function Chat() {
                             </View>
                         ) : (
                             <View style={styles.aiMessage}>
-                                <Text style={styles.messageLabel}>AI:</Text>
-                                <Text style={styles.messageText}>{message.content}</Text>
-                                {/* Audio player placeholder - we can implement this once you share the audio response structure */}
-                                {message && (
-                                    <View style={styles.audioPlayer}>
-                                        <Text>Audio Available</Text>
-                                        {/* Audio player component will go here */}
-                                    </View>
-                                )}
+                                <View style={styles.aiMessageHeaderContainer}>
+                                    <Text style={styles.messageLabel}>AI:</Text>
+                                    {(message && message.audioArr) && (
+                                        <RealtimeAudioPlayer delta={message.audioArr} />
+                                    )}
+                                </View>
+                                <View style={styles.messageTextContainer}>
+                                    <Text style={styles.messageText}>{message.content}</Text>
+                                </View>
                             </View>
                         )}
                     </View>
@@ -79,34 +81,12 @@ export default function Chat() {
                     value={aiText}
                     onChangeText={setAiText}
                 />
-                {/* <Button 
+                <Button 
                     disabled={!aiText || isLoading} 
                     title={isLoading ? "Sending..." : "Send"} 
                     onPress={() => handleSubmit(aiText)} 
                     color="#FFC0CB" 
-                /> */}
-                {/* <Button 
-                    title={"Decode Audio"} 
-                    onPress={async () => {
-                        // let decodedAudio = []
-                        // for (let audio of audioChunks) {
-                        //     decodedAudio.push(handleAudioDelta(audio))
-                        // }
-
-                        const decodedAudio = await Promise.all(
-                            audioChunks.map((chunk) => handleAudioDelta(chunk))
-                        )
-
-                        const uri = await handleAudioDone(decodedAudio)
-
-                        if (uri) setAudioUri(uri)
-                    }} 
-                    color="#000000" 
-                /> */}
-                {/* {audioUri && */}
-                {/* <AudioPlayer fileName={audioChunk[0]} fromAi={true}/> */}
-                {/* } */}
-                <Test fileName={audioChunk[0]}/>
+                />
             </View>
         </View>
     );
@@ -135,8 +115,15 @@ const styles = StyleSheet.create({
     userMessage: {
         marginBottom: 8,
     },
+    aiMessageHeaderContainer: {
+        display: "flex", 
+        flexDirection: "row", 
+        alignItems: "center",
+        marginBottom: 10,
+        gap: 10,
+    },
     aiMessage: {
-        backgroundColor: '#D9D9D6',
+        backgroundColor: '#B3B3B3',
         borderRadius: 8,
         padding: 12,
     },
@@ -144,6 +131,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 4,
         color: '#1C1C1C',
+    },
+    messageTextContainer: {
+        backgroundColor: "#D9D9D6",
+        padding: 10,
+        borderRadius: 10,
     },
     messageText: {
         color: '#333',
@@ -168,5 +160,5 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
         marginBottom: 20,
         backgroundColor: 'white',
-    }
+    },
 });
