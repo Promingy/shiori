@@ -9,49 +9,115 @@ const headers = {
     'Authorization': `Bearer ${AI_API_KEY}`
 };
 
-const useAIStore = create<OpenAiStore>((set, get): OpenAiStore => ({
-    hasSent: false,
-    testRequest: async (content: string) => {
-        const hasSent = get().hasSent;
+const useAIStore = create<OpenAiStore>((set, get) => ({
+    ws: null,
+    authenticated: false,
+    transcript: [],
+    initializeWebSocket: () => {
+        console.log("Initializing websocket...");
+        // Make sure any existing connection is closed
+        const currentWs = get().ws;
+        if (currentWs) {
+            currentWs.close();
+        }
 
-        // const token = localStorage.getItem('token');
+        // Create new WebSocket connection
+        const ws = new WebSocket('ws://localhost:8000/ws/japanese/');
+        const newTranscript = get().transcript
+        
+        ws.onopen = () => {
+            console.log('WebSocket connection established - attempting authentication');
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No authentication token found');
+                ws.close();
+                return;
+            }
 
-        // const requestOptions: RequestOptions = {
-        //     method: "GET",
-        //     headers: {
-        //         ...headers,
-        //         "Authorization": `Bearer ${token}`
-        //     },
-        //     // body: JSON.stringify({content})
-        // };
+            ws.send(JSON.stringify({
+                type: 'authenticate',
+                token: token
+            }));
+        };
 
-        const ws = new WebSocket('ws://localhost:8000/ws/japanese')
-
-
-
-        if (!hasSent) {
-            set({hasSent: true})
-
+        ws.onmessage = (e: any) => {
             try {
-                // const res = await fetch('https://api.openai.com/v1/chat/completions', requestOptions);
-                // const res = await fetch(`${BASE_URL}/chat/test/`, requestOptions)
+                const data = JSON.parse(e.data);
+                console.log('Received:', data);
 
-                // if (res.ok) {
-                //     const data = res.json();
+                if (data.type === 'authentication_successful') {
+                    console.log('Successfully authenticated WebSocket');
+                    set({ authenticated: true });
+                } 
+                else if (data.type === 'authentication_failed') {
+                    console.error('WebSocket authentication failed');
+                    get().cleanup();
+                }
+                else if (data.type === 'response.audio_transcript.delta'){
+                    console.log('data.delta', data.delta)
+                    newTranscript.push(data.delta)
+                    set({transcript: newTranscript})
 
-
-                // };
+                    console.log('should be updated transcript', get().transcript)
+                }
+            } catch (error) {
+                console.error(`Error parsing message:`, error);
             }
+        };
+        
+        ws.onclose = (e: any) => {
+            console.log('WebSocket disconnected:', e.code, e.reason);
+            set({ authenticated: false, ws: null });
+        };
+        
+        ws.onerror = (e: any) => {
+            console.error('WebSocket error:', e);
+            get().cleanup();
+        };
+        
+        set({ ws });
+    },    
+    testRequest: async (content: string) => {
+        const ws = get().ws;
+        const authenticated = get().authenticated
+        set({transcript: []})
 
-            catch {
+        if (!ws || !authenticated) {
+            console.error('WebSocket not connected or authenticated');
+            return;
+        }
 
-            }
-
-            finally {
-
-            }
+        ws.send(JSON.stringify({
+            type: 'response.create',
+            content: content
+        }))
+        
+        // ws.send(JSON.stringify({
+        //     type: 'conversation.item.create',
+        //     item: {
+        //         type: 'message',
+        //         role: 'user',
+        //         content: [{
+        //             type: "input_text",
+        //             text: content
+        //         }]
+        //     }
+        // }));
+        
+        // // Send response.create to generate a response
+        // ws.send(JSON.stringify({
+        //     type: 'response.create'
+        // }));
+    },
+    
+    cleanup: () => {
+        const ws = get().ws;
+        if (ws) {
+            console.log('Cleaning up Websocket connection...')
+            ws.close();
+            set({ ws: null, authenticated: false });
         }
     }
-}))
+}));
 
 export default useAIStore
