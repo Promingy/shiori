@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Button, View } from 'react-native';
 import { S3_BUCKET } from '@env';
+import { WavRecorder } from '@/wavtools/index.js';
 
 interface AudioPlayerProps {
     fileName: string;
+    fromAi: boolean
 }
 
-export default function AudioPlayer({ fileName }: AudioPlayerProps) {
+export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -30,17 +32,22 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
     };
 
     const playAudio = async (uri: string) => {
-        if (sound && sound._loaded) {
-            sound.playAsync();
-        } else {
-            const { sound } = await Audio.Sound.createAsync(
-                { uri },
-                { shouldPlay: true },
-                handlePlaybackStatusUpdate
-            );
-            setSound(sound);
+        try {
+            if (sound && sound._loaded) {
+                sound.playAsync();
+            } else {
+                const { sound } = await Audio.Sound.createAsync(
+                    { uri },
+                    { shouldPlay: true },
+                    handlePlaybackStatusUpdate
+                );
+                setSound(sound);
+            }
+            setIsPlaying(true);
         }
-        setIsPlaying(true);
+        catch (error) {
+            console.error('Failed to play audio:', error)
+        }
     };
 
     const stopAudio = async () => {
@@ -55,11 +62,17 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
         <Button
             title={isPlaying ? 'Stop' : 'Play'}
             onPress={() => {
-            if (isPlaying) {
-                stopAudio();
-            } else {
-                playAudio(`${S3_BUCKET}${fileName}`); // Replace with your audio file URI
-            }
+                if (isPlaying) {
+                    stopAudio();
+                } else {
+                    if (!fromAi){
+                        playAudio(`${S3_BUCKET}${fileName}`); // Replace with your audio file URI
+                    }
+                    else {
+                        console.log('test')
+                        playAudio(fileName)
+                    }
+                }
             }}
         />
         </View>

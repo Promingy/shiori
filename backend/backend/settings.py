@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +30,7 @@ SECRET_KEY = "django-insecure-=$qsrhm)da##%z($_eb5=eh%5=hoq@6l+-x^&*x+$!+vs+3_3$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOWED_ORIGINS = ["http://localhost:8081"]
@@ -34,6 +38,16 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SECURE = False  # Set to True only if you're using HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(os.getenv('REDIS_HOST', 'redis'), int(os.getenv('REDIS_PORT', 6379)))]
+        },
+    },
+}
+
+ASGI_APPLICATION = "backend.asgi.application"
 
 
 # Application definition
@@ -47,8 +61,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "core",
+    "channels",
+    "channels_redis",
     "user_auth",
+    "core",
+    "chat",
 ]
 
 MIDDLEWARE = [
