@@ -13,6 +13,7 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
     ws: null,
     authenticated: false,
     transcript: null,
+    receivedAudio: [],
     initializeWebSocket: () => {
         console.log("Initializing websocket...");
         // Make sure any existing connection is closed

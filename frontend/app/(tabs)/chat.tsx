@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Button, StyleSheet, View, TextInput, ScrollView } from 'react-native';
 import useAIStore from '@/store/OpenAiStore';
 import { Text } from '@/components/Themed';
+import { audioChunks, handleAudioDelta, handleAudioDone } from '@/helpers/decodeAudio';
+import AudioPlayer from '@/components/AudioPlayer';
 
 export default function Chat() {
     const { testRequest, initializeWebSocket, cleanup, transcript } = useAIStore();
     const [aiText, setAiText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [messages, setMessages] = useState<any[]>([]);
+    const [audioUri, setAudioUri] = useState("")
 
     const handleSubmit = async (content: string) => {
         setIsLoading(true);
@@ -72,12 +75,32 @@ export default function Chat() {
                     value={aiText}
                     onChangeText={setAiText}
                 />
-                <Button 
+                {/* <Button 
                     disabled={!aiText || isLoading} 
                     title={isLoading ? "Sending..." : "Send"} 
                     onPress={() => handleSubmit(aiText)} 
                     color="#FFC0CB" 
+                /> */}
+                <Button 
+                    title={"Decode Audio"} 
+                    onPress={async () => {
+                        // let decodedAudio = []
+                        // for (let audio of audioChunks) {
+                        //     decodedAudio.push(handleAudioDelta(audio))
+                        // }
+
+                        const decodedAudio = await Promise.all(
+                            audioChunks.map((chunk) => handleAudioDelta(chunk))
+                        )
+
+                        const uri = await handleAudioDone(decodedAudio)
+                        setAudioUri(uri)
+                    }} 
+                    color="#000000" 
                 />
+                {audioUri &&
+                    <AudioPlayer fileName={audioUri} fromAi={true}/>
+                }
             </View>
         </View>
     );

@@ -5,9 +5,10 @@ import { S3_BUCKET } from '@env';
 
 interface AudioPlayerProps {
     fileName: string;
+    fromAi: boolean
 }
 
-export default function AudioPlayer({ fileName }: AudioPlayerProps) {
+export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -55,11 +56,17 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
         <Button
             title={isPlaying ? 'Stop' : 'Play'}
             onPress={() => {
-            if (isPlaying) {
-                stopAudio();
-            } else {
-                playAudio(`${S3_BUCKET}${fileName}`); // Replace with your audio file URI
-            }
+                if (isPlaying) {
+                    stopAudio();
+                } else {
+                    if (!fromAi){
+                        playAudio(`${S3_BUCKET}${fileName}`); // Replace with your audio file URI
+                    }
+                    else {
+                        console.log('test')
+                        playAudio(fileName)
+                    }
+                }
             }}
         />
         </View>
