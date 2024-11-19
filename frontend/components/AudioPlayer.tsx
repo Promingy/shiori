@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Button, View } from 'react-native';
-import { S3_BUCKET } from '@env';
 import { WavRecorder } from '@/wavtools/index.js';
 
 interface AudioPlayerProps {
     fileName: string;
-    fromAi: boolean
 }
 
-export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
+export default function AudioPlayer({ fileName }: AudioPlayerProps) {
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -65,13 +63,7 @@ export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
                 if (isPlaying) {
                     stopAudio();
                 } else {
-                    if (!fromAi){
-                        playAudio(`${S3_BUCKET}${fileName}`); // Replace with your audio file URI
-                    }
-                    else {
-                        console.log('test')
-                        playAudio(fileName)
-                    }
+                    playAudio(`${process.env.EXPO_PUBLIC_S3_BUCKET}${fileName}`); // Replace with your audio file URI
                 }
             }}
         />

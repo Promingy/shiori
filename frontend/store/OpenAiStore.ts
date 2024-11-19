@@ -1,12 +1,11 @@
 import { create } from 'zustand';
-import { BASE_URL, AI_API_KEY } from '@env';
 import { OpenAiStore } from '@/types/OpenAI';
 import { RequestOptions } from '@/types/Auth';
 import WebSocket from 'isomorphic-ws'
 
 const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${AI_API_KEY}`
+    'Authorization': `Bearer ${process.env.EXPO_PUBLIC_AI_API_KEY}`
 };
 
 const useAIStore = create<OpenAiStore>((set, get) => ({
@@ -23,7 +22,8 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
         }
 
         // Create new WebSocket connection
-        const ws = new WebSocket('ws://localhost:8000/ws/japanese/');
+        const ws = new WebSocket(`${process.env.EXPO_PUBLIC_WS_URL}/japanese/`);
+        
         const newTranscript = get().transcript
         
         ws.onopen = () => {

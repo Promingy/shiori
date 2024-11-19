@@ -5,7 +5,6 @@ import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import AudioPlayer from '@/components/AudioPlayer';
-import { S3_BUCKET } from '@env';
 
 export default function TabTwoScreen() {
   const { randomCard, getRandomCard } = useCardStore();
@@ -73,7 +72,7 @@ export default function TabTwoScreen() {
                   <Text style={styles.cardPronunciation}>{pronunciation}</Text>
                   <Text style={styles.cardDescription}>{definition}</Text>
                   { imageFile && 
-                    <Image source={{ uri: `${S3_BUCKET}${imageFile}` }} style={styles.cardImage} />
+                    <Image source={{ uri: `${process.env.EXPO_PUBLIC_S3_BUCKET}${imageFile}` }} style={styles.cardImage} />
                   }
                   <Text style={styles.cardSentenceJPContainer}>
                     <RenderHTML tagsStyles={{ p: styles.cardSentenceJP, b: {fontWeight: "400"} }} contentWidth={300} source={{ html: `<p>${sentenceJP}</p>` }} />

@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { FlashCards } from '@/types/FlashCards';
 import { RequestOptions } from '@/types/Auth';
 import { useAuthStore } from './AuthStore';
-import { BASE_URL } from '@env';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -37,7 +36,8 @@ export const useCardStore = create<FlashCards>((set) => ({
         }
 
         try {
-            const res = await fetch(`${BASE_URL}/random_card/`, requestOptions)
+            console.log('TEST', process.env.EXPO_PUBLIC_BASE_URL)
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/random_card/`, requestOptions)
             const data = await res.json();
 
             if (res.ok) {
