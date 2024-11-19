@@ -4,6 +4,7 @@ import useAIStore from '@/store/OpenAiStore';
 import { Text } from '@/components/Themed';
 import Audio from '@/audio.json'
 import RealtimeAudioPlayer from '@/components/RealtimeAudioPlayer';
+import RealtimeRecorder from '@/components/RealTimeRecorder';
 
 const audioChunk = [Audio["1"], Audio["2"]]
 
@@ -87,6 +88,7 @@ export default function Chat() {
                     onPress={() => handleSubmit(aiText)} 
                     color="#FFC0CB" 
                 />
+                <RealtimeRecorder />
             </View>
         </View>
     );

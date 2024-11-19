@@ -34,6 +34,7 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
             if (sound && sound._loaded) {
                 sound.playAsync();
             } else {
+                console.log(uri)
                 const { sound } = await Audio.Sound.createAsync(
                     { uri },
                     { shouldPlay: true },
@@ -63,7 +64,10 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
                 if (isPlaying) {
                     stopAudio();
                 } else {
-                    playAudio(`${process.env.EXPO_PUBLIC_S3_BUCKET}${fileName}`); // Replace with your audio file URI
+                    const uri = fileName.startsWith('blob:') 
+                        ? fileName 
+                        : `${process.env.EXPO_PUBLIC_S3_BUCKET}${fileName}`;
+                    playAudio(uri);
                 }
             }}
         />
