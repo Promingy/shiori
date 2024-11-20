@@ -1,7 +1,9 @@
 import { Button, View } from 'react-native';
 import { WavRecorder } from '@/wavtools';
-import { useState } from 'react';
-import AudioPlayer from './AudioPlayer';
+import { useState, useEffect } from 'react';
+import RealtimeAudioPlayer from './RealtimeAudioPlayer';
+import { Buffer } from 'buffer';
+// import RNFetchBlob from 'react-native-blob-util';
 
 
 export default function RealtimeRecorder() {
@@ -11,10 +13,10 @@ export default function RealtimeRecorder() {
 
     // Initialize the recorder
     const initRecorder = async () => {
-        const recorder = new WavRecorder();
+        const recorder = new WavRecorder({sampleRate: 24000});
         await recorder.begin();
         setWavRecorder(recorder);
-    }
+    };
 
     // Start recording
     const startRecording = async () => {
@@ -22,49 +24,50 @@ export default function RealtimeRecorder() {
 
         if (wavRecorder) {
             await wavRecorder.clear();
-            
-            await wavRecorder.record()
-            
+            await wavRecorder.record();
+
             setIsRecording(true);
-            
-            console.log('Status', wavRecorder.getStatus())
         }
-    }
+    };
 
     // Stop recording
     const stopRecording = async () => {
         if (!wavRecorder) return;
 
         await wavRecorder.pause();
-    
-        const audio = await wavRecorder.end()
+        const audio = await wavRecorder.end();
 
-        setWavRecorder(null)
-        setIsRecording(false)
+        setIsRecording(false);
+        setWavRecorder(null);
 
-        setFinalAudio(audio.url)
-        console.log(audio)
+        const encodedAudio = await blobToBase64(audio.blob)
 
-        console.log('Status', wavRecorder.getStatus())
-    }
+        setFinalAudio(encodedAudio);
 
-    // Toggle Recording
+    };
+
+    // Toggle recording
     const toggleRecording = async () => {
-        // if (!wavRecorder) initRecorder();
-
         if (isRecording) {
             await stopRecording();
         } else {
             await startRecording();
         }
-    }
+    };
 
     return (
         <View>
             <Button title={isRecording ? 'Stop Recording' : 'Start Recording'} onPress={toggleRecording} />
             { finalAudio &&
-                <AudioPlayer fileName={finalAudio} />
+                <RealtimeAudioPlayer delta={[finalAudio]} sampleRate={44100} />
             }
         </View>
-    )
+    );
+}
+
+// encode final audio blob to base64 to send to ai
+async function blobToBase64(blob: Blob) {
+    const buffer = await blob.arrayBuffer();
+
+    return Buffer.from(buffer).toString('base64');
 }

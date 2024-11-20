@@ -3,14 +3,14 @@ import { Button, View, StyleSheet, Platform, TouchableOpacity } from "react-nati
 import { WavStreamPlayer } from "@/wavtools/index.js";
 import { FontAwesome } from "@expo/vector-icons";
 
-export default function RealtimeAudioPlayer({ delta }: { delta: string[] }) {
+export default function RealtimeAudioPlayer({ delta, sampleRate = 24000 }: { delta: string[], sampleRate?: number }) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [wavStreamPlayer, setWavStreamPlayer] = useState<WavStreamPlayer | null>(null);
 
     // Initialize the player
     useEffect(() => {
         const initPlayer = async () => {
-            const player = new WavStreamPlayer({ sampleRate: 24000 });
+            const player = new WavStreamPlayer({ sampleRate: sampleRate });
             await player.connect();
             setWavStreamPlayer(player);
         };
@@ -24,7 +24,6 @@ export default function RealtimeAudioPlayer({ delta }: { delta: string[] }) {
 
 
     const decodeBase64ToPCM = (base64String: string): Int16Array => {
-
         if (Platform.OS === 'web'){
             const binaryString = atob(base64String); // Decode base64
             const len = binaryString.length;

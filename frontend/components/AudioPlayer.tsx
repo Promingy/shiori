@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Button, View } from 'react-native';
-import { WavRecorder } from '@/wavtools/index.js';
 
 interface AudioPlayerProps {
     fileName: string;
@@ -13,10 +12,10 @@ export default function AudioPlayer({ fileName }: AudioPlayerProps) {
 
     useEffect(() => {
         return () => {
-        // Unload the sound when the component is unmounted
-        if (sound) {
-            sound.unloadAsync();
-        }
+            // Unload the sound when the component is unmounted
+            if (sound) {
+                sound.unloadAsync();
+            }
         };
     }, [sound]);
 
