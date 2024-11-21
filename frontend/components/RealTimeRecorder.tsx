@@ -1,12 +1,13 @@
 import { Button, View } from 'react-native';
 import { WavRecorder } from '@/wavtools';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import RealtimeAudioPlayer from './RealtimeAudioPlayer';
 import { Buffer } from 'buffer';
-// import RNFetchBlob from 'react-native-blob-util';
+import useAIStore from '@/store/OpenAiStore';
 
 
 export default function RealtimeRecorder() {
+    const { sendAudio } = useAIStore()
     const [wavRecorder, setWavRecorder] = useState<WavRecorder | null>(null);
     const [isRecording, setIsRecording] = useState(false);
     const [finalAudio, setFinalAudio] = useState<string | null>(null);
@@ -43,7 +44,6 @@ export default function RealtimeRecorder() {
         const encodedAudio = await blobToBase64(audio.blob)
 
         setFinalAudio(encodedAudio);
-
     };
 
     // Toggle recording
@@ -52,14 +52,23 @@ export default function RealtimeRecorder() {
             await stopRecording();
         } else {
             await startRecording();
-        }
+    }
     };
+
+    async function handleSubmit() {
+        if(finalAudio){
+            await sendAudio(finalAudio)
+        }
+    }
 
     return (
         <View>
             <Button title={isRecording ? 'Stop Recording' : 'Start Recording'} onPress={toggleRecording} />
             { finalAudio &&
-                <RealtimeAudioPlayer delta={[finalAudio]} sampleRate={44100} />
+                <>
+                    <RealtimeAudioPlayer delta={[finalAudio]} sampleRate={44100} />
+                    <Button title="Send Audio" onPress={handleSubmit} />
+                </>
             }
         </View>
     );

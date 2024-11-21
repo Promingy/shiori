@@ -9,7 +9,7 @@ import RealtimeRecorder from '@/components/RealTimeRecorder';
 const audioChunk = [Audio["1"], Audio["2"]]
 
 export default function Chat() {
-    const { testRequest, initializeWebSocket, cleanup, transcript, receivedAudio } = useAIStore();
+    const { sendMessage, initializeWebSocket, cleanup, transcript, receivedAudio } = useAIStore();
     const [aiText, setAiText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [messages, setMessages] = useState<any[]>([]);
@@ -17,7 +17,7 @@ export default function Chat() {
     const handleSubmit = async (content: string) => {
         setIsLoading(true);
         setMessages(prev => [...prev, {type: 'user', content}])
-        await testRequest(content);
+        await sendMessage(content);
         
         setAiText(""); // Clear input after sending
         // setTimeout(() => {

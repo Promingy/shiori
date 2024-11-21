@@ -144,6 +144,24 @@ class RealtimeConsumer(AsyncWebsocketConsumer):
                 await self.openai_ws.send(json.dumps({
                     'type': 'response.create'
                 }))
+            
+            elif message_type == 'input_audio':
+                print('THIS IS GETTING HIT')
+                await self.openai_ws.send(json.dumps({
+                    'type': 'conversation.item.create',
+                    "item": {
+                        "type": "message",
+                        'role': "user",
+                        'content': [{
+                            'type': 'input_audio',
+                            'audio': data.get('content')
+                        }]
+                    }
+                }))
+
+                await self.openai_ws.send(json.dumps({
+                    'type': 'response.create'
+                }))
                 
             elif message_type == 'end_session':
                 if hasattr(self, 'openai_ws'):
