@@ -1,12 +1,16 @@
 import { create } from 'zustand';
-import { BASE_URL, AI_API_KEY } from '@env';
 import { OpenAiStore } from '@/types/OpenAI';
 import { RequestOptions } from '@/types/Auth';
 import WebSocket from 'isomorphic-ws'
 
+const AUTHENTICATED = 'authentication_successful';
+const UNAUTHENTICATED = 'authentication_failed';
+const TRANSCRIPT_DONE = 'response.audio_transcript.done';
+const AUDIO_DELTA = 'response.audio.delta';
+
 const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${AI_API_KEY}`
+    'Authorization': `Bearer ${process.env.EXPO_PUBLIC_AI_API_KEY}`
 };
 
 const useAIStore = create<OpenAiStore>((set, get) => ({
@@ -23,9 +27,8 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
         }
 
         // Create new WebSocket connection
-        const ws = new WebSocket('ws://localhost:8000/ws/japanese/');
-        const newTranscript = get().transcript
-        
+        const ws = new WebSocket(`${process.env.EXPO_PUBLIC_WS_URL}/japanese/`);
+                
         ws.onopen = () => {
             console.log('WebSocket connection established - attempting authentication');
             const token = localStorage.getItem('token');
@@ -45,6 +48,26 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
             try {
                 const data = JSON.parse(e.data);
                 console.log('Received:', data);
+
+                // switch (data.type) {
+                //     case AUTHENTICATED:{
+                //         console.log('Successfully authenticated WebSocket');
+                //         set({ authenticated: true });
+                //     }
+                //     case UNAUTHENTICATED: {
+                //         console.error('WebSocket authentication failed');
+                //         get().cleanup();
+                //     }
+                //     case TRANSCRIPT_DONE:{
+                //         set({transcript: data.transcript})
+                //     }
+                //     case AUDIO_DELTA:{
+                //         set({receivedAudio: [...get().receivedAudio, data.delta]})
+                //     }
+                //     default:{
+
+                //     }
+                // }
 
                 if (data.type === 'authentication_successful') {
                     console.log('Successfully authenticated WebSocket');
@@ -77,7 +100,7 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
         
         set({ ws });
     },    
-    testRequest: async (content: string) => {
+    sendMessage: async (content: string) => {
         const ws = get().ws;
         const authenticated = get().authenticated
         set({transcript: null, receivedAudio: []})
@@ -91,23 +114,22 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
             type: 'message',
             content: content
         }))
-        
-        // ws.send(JSON.stringify({
-        //     type: 'conversation.item.create',
-        //     item: {
-        //         type: 'message',
-        //         role: 'user',
-        //         content: [{
-        //             type: "input_text",
-        //             text: content
-        //         }]
-        //     }
-        // }));
-        
-        // // Send response.create to generate a response
-        // ws.send(JSON.stringify({
-        //     type: 'response.create'
-        // }));
+    },
+
+    sendAudio: async (base64Audio: string) => {
+        const ws = get().ws;
+        const authenticated = get().authenticated
+        set({transcript: null, receivedAudio: []})
+
+        if (!ws || !authenticated) {
+            console.error('WebSocket not connected or authenticated');
+            return;
+        }
+
+        ws.send(JSON.stringify({
+            type: 'input_audio',
+            content: base64Audio
+        }))
     },
     
     cleanup: () => {

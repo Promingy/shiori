@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { AuthState, RequestOptions } from '@/types/Auth';
-import { BASE_URL } from '@env';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -24,7 +23,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 
         try {
-            const res = await fetch(`${BASE_URL}/auth/signup/`, requestOptions);
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/signup/`, requestOptions);
 
             if (res.ok){
                 const data = await res.json();
@@ -55,7 +54,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${BASE_URL}/auth/login/`, requestOptions);
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/login/`, requestOptions);
 
             if (res.ok){
                 const data = await res.json();
@@ -83,7 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${BASE_URL}/auth/logout/`, requestOptions);
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/logout/`, requestOptions);
 
             if (res.ok) {
                 set({user: null});
@@ -111,7 +110,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const res = await fetch(`${BASE_URL}/auth/user/`, requestOptions);
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/user/`, requestOptions);
 
             if (res.ok) {
                 const data = await res.json();
@@ -163,7 +162,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
-            const rest = await fetch(`${BASE_URL}/auth/token/refresh/`, requestOptions);
+            const rest = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/token/refresh/`, requestOptions);
 
             if (rest.ok) {
                 const data = await rest.json();

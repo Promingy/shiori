@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Button, View } from 'react-native';
-import { S3_BUCKET } from '@env';
-import { WavRecorder } from '@/wavtools/index.js';
 
 interface AudioPlayerProps {
     fileName: string;
-    fromAi: boolean
 }
 
-export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
+export default function AudioPlayer({ fileName }: AudioPlayerProps) {
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
         return () => {
-        // Unload the sound when the component is unmounted
-        if (sound) {
-            sound.unloadAsync();
-        }
+            // Unload the sound when the component is unmounted
+            if (sound) {
+                sound.unloadAsync();
+            }
         };
     }, [sound]);
 
@@ -36,6 +33,7 @@ export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
             if (sound && sound._loaded) {
                 sound.playAsync();
             } else {
+                console.log(uri)
                 const { sound } = await Audio.Sound.createAsync(
                     { uri },
                     { shouldPlay: true },
@@ -65,13 +63,10 @@ export default function AudioPlayer({ fileName, fromAi }: AudioPlayerProps) {
                 if (isPlaying) {
                     stopAudio();
                 } else {
-                    if (!fromAi){
-                        playAudio(`${S3_BUCKET}${fileName}`); // Replace with your audio file URI
-                    }
-                    else {
-                        console.log('test')
-                        playAudio(fileName)
-                    }
+                    const uri = fileName.startsWith('blob:') 
+                        ? fileName 
+                        : `${process.env.EXPO_PUBLIC_S3_BUCKET}${fileName}`;
+                    playAudio(uri);
                 }
             }}
         />

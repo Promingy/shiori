@@ -8,6 +8,7 @@ export interface OpenAiStore {
     transcript: string | null;
     initializeWebSocket: initializeWebsSocket;
     receivedAudio: string[];
-    testRequest: (content: string) => Promise<void>;
+    sendAudio: (base64Audio: string) => Promise<void>;
+    sendMessage: (content: string) => Promise<void>;
     cleanup: () => void;
 }
