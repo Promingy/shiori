@@ -5,9 +5,10 @@ import { Text } from '@/components/Themed';
 import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import AudioPlayer from '@/components/AudioPlayer';
+import LoadingScreen from '../loading';
 
 export default function TabTwoScreen() {
-  const { randomCard, getRandomCard } = useCardStore();
+  const { randomCard, getRandomCard, isLoading } = useCardStore();
   const [flipped, setFlipped] = useState(false);
 
   // card field order - Word, Pronunciation, Definition, Sentence (Japanese), Sentence (English), IMG, arr of media, arr of media
@@ -51,6 +52,12 @@ export default function TabTwoScreen() {
 
 
   if (!randomCard) return null;
+
+  if (isLoading) {
+    return (
+      <LoadingScreen />
+    )
+  }
 
   return (
     <View style={styles.container}>

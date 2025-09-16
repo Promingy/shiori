@@ -9,7 +9,7 @@ const headers = {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
-    isLoading: false,
+    isLoading: true,
     error: null,
     hasRefreshed: false,
     signup: async (first_name: string, last_name: string, email: string, password: string) => {

@@ -6,6 +6,7 @@ import { Pressable } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import LoadingScreen from '../loading';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -29,7 +30,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
+          title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
@@ -50,15 +51,17 @@ export default function TabLayout() {
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Tab Two',
+          title: 'Flash Cards',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
+      {/* href:null -- disabled tab until feature is finished */}
       <Tabs.Screen 
         name="chat"
         options={{
           title: "Chat",
-          tabBarIcon: ({ color }) => <TabBarIcon name="comment" color={color} />
+          tabBarIcon: ({ color }) => <TabBarIcon name="comment" color={color} />,
+          href: null
         }}
       />
     </Tabs>

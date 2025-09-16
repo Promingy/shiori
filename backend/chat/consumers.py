@@ -84,13 +84,14 @@ class RealtimeConsumer(AsyncWebsocketConsumer):
             await self.openai_ws.send(json.dumps({
                 'type': 'session.update',
                 'session': {
-                    "instructions": f"""
-                    You are a Japanese language tutor. The user's currently going through a Hiragana, Katakana and Japanese Core 2.3k flashcard deck
-                    in an Anki based app as well as the are making their way through Cure Dolly's grammar course. They currently know the following kana
-                    {known_kana} and the following kangi {known_kanji}, these are pulled directly from their review cards and also holds their profeicency with each character/word. 
-                    avoid using words too far outside of their vocabulary. Speak naturally in Japanese but be ready to explain in English if they struggle.
-                    Use appropriate politeness levels based on their JLPT level.
-                    """,
+                    # "instructions": f"""
+                    # You are a Japanese language tutor. The user's currently going through a Hiragana, Katakana and Japanese Core 2.3k flashcard deck
+                    # in an Anki based app as well as the are making their way through Cure Dolly's grammar course. They currently know the following kana
+                    # {known_kana} and the following kangi {known_kanji}, these are pulled directly from their review cards and also holds their profeicency with each character/word. 
+                    # avoid using words too far outside of their vocabulary. Speak naturally in Japanese but be ready to explain in English if they struggle.
+                    # Use appropriate politeness levels based on their JLPT level.
+                    # """,
+                    "instructions": "",
                     "voice": "alloy"
                 }
             }))
@@ -146,7 +147,17 @@ class RealtimeConsumer(AsyncWebsocketConsumer):
                 }))
             
             elif message_type == 'input_audio':
-                print('THIS IS GETTING HIT')
+                # print('THIS IS GETTING HIT')
+                audio_content = data.get('content')
+
+                try:
+                    import base64
+                    decoded = base64.b64decode(audio_content)
+                    print("Decoded audio length:", len(decoded))
+                except Exception as e:
+                    print(f"Base64 decoding error: {e}")
+                    return
+
                 await self.openai_ws.send(json.dumps({
                     'type': 'conversation.item.create',
                     "item": {
@@ -154,7 +165,7 @@ class RealtimeConsumer(AsyncWebsocketConsumer):
                         'role': "user",
                         'content': [{
                             'type': 'input_audio',
-                            'audio': data.get('content')
+                            'audio': audio_content
                         }]
                     }
                 }))
