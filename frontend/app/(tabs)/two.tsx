@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Button, View, TouchableOpacity, Image } from 'react-native';
 import { useCardStore } from '@/store/FlashCardStore';
 import { Text } from '@/components/Themed';
-import { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import RenderHTML from 'react-native-render-html';
 import AudioPlayer from '@/components/AudioPlayer';
 import LoadingScreen from '../loading';
@@ -20,7 +19,6 @@ export default function TabTwoScreen() {
   const [wordSoundFile, setWordSoundFile] = useState('');
   const [sentenceSoundFile, setSentenceSoundFile] = useState('');
   const [imageFile, setImageFile] = useState('');
-
 
   useEffect(() => {
     // Fetch the first random card when the component mounts
@@ -61,7 +59,6 @@ export default function TabTwoScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Random Card</Text>
       
       {/* Card container with animated flip */}
       <TouchableOpacity disabled={!!randomCard.message} onPress={() => setFlipped(!flipped)}>
@@ -102,31 +99,38 @@ export default function TabTwoScreen() {
       </TouchableOpacity>
   
       {/* Button to fetch a new random card */}
-      <View style={styles.buttonContainer}>
-        <Button 
-          color="#D7003A" 
-          disabled={!randomCard?.card} 
-          title="Again" 
-          onPress={() => handleSubmit("Again")} 
-        />
-        <Button 
-          color="#E69B00" 
-          disabled={!randomCard?.card} 
-          title="Hard" 
-          onPress={() => handleSubmit("Hard")} 
-        />
-        <Button 
-          color="#6B8E23" 
-          disabled={!randomCard?.card} 
-          title="Good" 
-          onPress={() => handleSubmit("Good")} 
-        />
-        <Button 
-          color="#A0C1D1" 
-          disabled={!randomCard?.card} 
-          title="Easy" 
-          onPress={() => handleSubmit("Easy")} 
-        />
+      {flipped && (
+        <View style={styles.buttonContainer}>
+          <Button 
+            color="#D7003A" 
+            disabled={!randomCard?.card} 
+            title="Again" 
+            onPress={() => handleSubmit("Again")} 
+          />
+          <Button 
+            color="#E69B00" 
+            disabled={!randomCard?.card} 
+            title="Hard" 
+            onPress={() => handleSubmit("Hard")} 
+          />
+          <Button 
+            color="#6B8E23" 
+            disabled={!randomCard?.card} 
+            title="Good" 
+            onPress={() => handleSubmit("Good")} 
+          />
+          <Button 
+            color="#A0C1D1" 
+            disabled={!randomCard?.card} 
+            title="Easy" 
+            onPress={() => handleSubmit("Easy")} 
+          />
+        </View>
+      )}
+      <View style={{flexDirection: "row", gap: 10}}>
+        <Text style={{color: '#1C1C1C'}}>Total: {(randomCard?.new_cards_left ?? 0) + (randomCard?.review_cards_left ?? 0)}</Text>
+        <Text style={{color: '#8A9A5B'}}>New: {randomCard?.new_cards_left}</Text>
+        <Text style={{color: '#D7003A'}}>Review: {randomCard?.review_cards_left}</Text>
       </View>
     </View>
   );
@@ -139,6 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    height: '100%',
   },
   title: {
     fontSize: 24,
@@ -150,19 +155,15 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 0.75 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     marginBottom: 20,
     width: 300,  // Adjusted the width to make the card wider
-    height: 400,  // Adjusted the height for better visibility
+    minHeight: 400,  // Adjusted the height for better visibility
     alignItems: 'center',
-    justifyContent: 'center',
-    backfaceVisibility: 'hidden', // Hide the back side when flipped
-    // transformStyle: 'preserve-3d', // Maintain 3D transformation
   },
   cardContent: {
-    position: 'absolute',
     width: '100%',
     height: '100%',
     justifyContent: 'center',
