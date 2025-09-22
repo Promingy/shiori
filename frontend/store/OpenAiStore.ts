@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { OpenAiStore } from '@/types/OpenAI';
-import { RequestOptions } from '@/types/Auth';
 import WebSocket from 'isomorphic-ws'
 
 const AUTHENTICATED = 'authentication_successful';
