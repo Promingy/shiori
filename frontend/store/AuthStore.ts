@@ -137,10 +137,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         try {
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/user/`, requestOptions);
+            console.log('RESOLUTION', res)
 
             if (res.ok) {
                 const data = await res.json();
                 set({user: data});
+                console.log('Fetched User Data:', data);
             }
 
             else if (res.status === 401) {
