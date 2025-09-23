@@ -4,6 +4,7 @@ import { useState } from 'react';
 import RealtimeAudioPlayer from './RealtimeAudioPlayer';
 import { Buffer } from 'buffer';
 import useAIStore from '@/store/OpenAiStore';
+import { Audio } from 'expo-av'
 
 
 export default function RealtimeRecorder() {
@@ -43,6 +44,8 @@ export default function RealtimeRecorder() {
 
         const encodedAudio = await blobToBase64(audio.blob)
 
+        console.log(audio)
+
         setFinalAudio(encodedAudio);
     };
 
@@ -57,7 +60,7 @@ export default function RealtimeRecorder() {
 
     async function handleSubmit() {
         if(finalAudio){
-            await sendAudio(finalAudio)
+            await sendAudio(finalAudio);
         }
     }
 
@@ -66,7 +69,7 @@ export default function RealtimeRecorder() {
             <Button title={isRecording ? 'Stop Recording' : 'Start Recording'} onPress={toggleRecording} />
             { finalAudio &&
                 <>
-                    <RealtimeAudioPlayer delta={[finalAudio]} sampleRate={44100} />
+                    <RealtimeAudioPlayer delta={[finalAudio]} sampleRate={48000} />
                     <Button title="Send Audio" onPress={handleSubmit} />
                 </>
             }
@@ -75,8 +78,30 @@ export default function RealtimeRecorder() {
 }
 
 // encode final audio blob to base64 to send to ai
-async function blobToBase64(blob: Blob) {
-    const buffer = await blob.arrayBuffer();
+/// Curr Working ( just not being processed by ai )
+// async function blobToBase64(blob: Blob) {
+//     const buffer = await blob.arrayBuffer();
 
-    return Buffer.from(buffer).toString('base64');
+//     return Buffer.from(buffer).toString('base64');
+// }
+
+async function blobToBase64(blob: Blob): Promise<string> {
+    // If blob is a WAV file, we might want to strip the header
+    const buffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(buffer);
+
+    // Log WAV header details
+    console.log('WAV Header:', {
+        riff: String.fromCharCode(...uint8Array.slice(0, 4)),
+        format: String.fromCharCode(...uint8Array.slice(8, 12)),
+        channels: uint8Array[22] | (uint8Array[23] << 8),
+        sampleRate: uint8Array[24] | (uint8Array[25] << 8) | (uint8Array[26] << 16) | (uint8Array[27] << 24),
+        bitsPerSample: uint8Array[34] | (uint8Array[35] << 8)
+    });
+
+    // Optionally extract just the audio data (skip WAV header)
+    const audioDataStart = 44;  // Typical WAV header length
+    const audioData = uint8Array.slice(audioDataStart);
+
+    return Buffer.from(audioData).toString('base64');
 }

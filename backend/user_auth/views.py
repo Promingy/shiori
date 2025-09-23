@@ -30,8 +30,6 @@ class Signup(CreateAPIView):
         Create a user, profile, 
         """
 
-        print('!!!!!!!!!!!!!!!!')
-
         try:
             user = User.objects.create_user(
                 first_name=request.data["first_name"],

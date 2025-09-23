@@ -1,4 +1,7 @@
 # shiori
+
+# How to Start Project
+
 # Technologies
 - Django
 - Django Rest Framework

@@ -37,6 +37,11 @@ export interface AuthState {
     isLoading: boolean;
     error: string | null;
     hasRefreshed: boolean;
+    token: string | null;
+    setToken: (token: string) => Promise<void>;
+    loadToken: () => Promise<string | null >;
+    clearToken: () => Promise<void>;
+    setUser: (user: user) => void;
     signup: SignupType;
     getUser: GetUserType;
     logout: LogoutType;

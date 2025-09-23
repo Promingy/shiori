@@ -7,7 +7,7 @@ const headers = {
     'Content-Type': 'application/json',
 };
 export const useCardStore = create<FlashCards>((set) => ({
-    isLoading: false,
+    isLoading: true,
     error: null,
     randomCard: null,
     getRandomCard: async (method='GET', id?: number, level?: string)=> {

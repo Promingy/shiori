@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useAuthStore } from '@/store/AuthStore';
+import LoadingScreen from '../loading';
 
 export default function SignupScreen() {
   const [firstName, setFirstName] = useState('');
@@ -38,6 +39,12 @@ export default function SignupScreen() {
 
   const handleLogout = () => {
     logout()
+  }
+
+  if (isLoading) {
+    return (
+      <LoadingScreen />
+    )
   }
 
   if (user) {
