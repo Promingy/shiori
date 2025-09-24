@@ -11,7 +11,7 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(false);
 
-  const { signup, isLoading, user, logout, login} = useAuthStore();
+  const { signup, isLoading, user, logout, login } = useAuthStore();
 
   const handleSignup = () => {
     
@@ -116,8 +116,11 @@ export default function SignupScreen() {
       <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', gap: 25 }}>
         <Button title={isLoading ? 'Signing Up...' : 'Sign Up'} onPress={handleSignup} />
         <Button title="Login" onPress={() => setIsLogin(true)} />
-
       </View>
+
+      {/* <View style={{ marginTop: 20 }}>  
+        <Button title="Test Logout Endpoint" onPress={() => logout()} />
+      </View> */}
     </View>
   );
 }

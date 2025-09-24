@@ -53,12 +53,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 
         try {
-            console.log('also a test', process.env.EXPO_PUBLIC_BASE_URL)
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/signup/`, requestOptions);
 
             if (res.ok){
                 const data = await res.json();
-                console.log('Im a test')
                 get().setToken(data.access);
 
                 get().setUser(data.user);
@@ -111,6 +109,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
+            console.log("url", `${process.env.EXPO_PUBLIC_BASE_URL}/auth/logout/`)
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/logout/`, requestOptions);
 
             if (res.ok) {
@@ -136,13 +135,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
 
         try {
+            console.log("url", `${process.env.EXPO_PUBLIC_BASE_URL}/auth/user/`)
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/auth/user/`, requestOptions);
             console.log('RESOLUTION', res)
 
             if (res.ok) {
                 const data = await res.json();
                 set({user: data});
-                console.log('Fetched User Data:', data);
             }
 
             else if (res.status === 401) {

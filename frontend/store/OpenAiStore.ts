@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { OpenAiStore } from '@/types/OpenAI';
 import WebSocket from 'isomorphic-ws'
+import { useAuthStore } from './AuthStore'
 
 const AUTHENTICATED = 'authentication_successful';
 const UNAUTHENTICATED = 'authentication_failed';
@@ -30,7 +31,7 @@ const useAIStore = create<OpenAiStore>((set, get) => ({
                 
         ws.onopen = () => {
             console.log('WebSocket connection established - attempting authentication');
-            const token = localStorage.getItem('token');
+            const { token } = useAuthStore.getState();
             if (!token) {
                 console.error('No authentication token found');
                 ws.close();

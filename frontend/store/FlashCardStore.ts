@@ -12,9 +12,9 @@ export const useCardStore = create<FlashCards>((set) => ({
     randomCard: null,
     getRandomCard: async (method='GET', id?: number, level?: string)=> {
         set({isLoading: true, error: null});
-        const { user } = useAuthStore.getState();
+        
+        const { user, token } = useAuthStore.getState();
 
-        const token = localStorage.getItem('token');
 
         const requestOptions: RequestOptions = {
             method,
