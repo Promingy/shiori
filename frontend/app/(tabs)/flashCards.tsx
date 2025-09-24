@@ -117,10 +117,7 @@ export default function TabTwoScreen() {
               title="Again" 
               onPress={() => handleSubmit("Again")} 
               /> */}
-              <TouchableOpacity>
-                <Text style={[styles.submitButton, {backgroundColor: "#D7003A"}]}>Again</Text>
-              </TouchableOpacity>
-            <Button 
+            {/* <Button 
               color="#E69B00"
               disabled={!randomCard?.card} 
               title="Hard" 
@@ -137,7 +134,19 @@ export default function TabTwoScreen() {
               disabled={!randomCard?.card} 
               title="Easy" 
               onPress={() => handleSubmit("Easy")} 
-              />
+              /> */}
+              <TouchableOpacity disabled={!randomCard?.card} onPress={() => handleSubmit("Again")}>
+                <Text style={[styles.submitButton, {backgroundColor: "#D7003A"}]}>Again</Text>
+              </TouchableOpacity>
+              <TouchableOpacity disabled={!randomCard?.card} onPress={() => handleSubmit("Hard")}>
+                <Text style={[styles.submitButton, {backgroundColor: "#E69B00"}]}>Hard</Text>
+              </TouchableOpacity>
+              <TouchableOpacity disabled={!randomCard?.card} onPress={() => handleSubmit("Good")}>
+                <Text style={[styles.submitButton, {backgroundColor: "#6B8E23"}]}>Good</Text>
+              </TouchableOpacity>
+              <TouchableOpacity disabled={!randomCard?.card} onPress={() => handleSubmit("Easy")}>
+                <Text style={[styles.submitButton, {backgroundColor: "#A0C1D1"}]}>Easy</Text>
+              </TouchableOpacity>
           </View>
         )}
       </View>
@@ -254,6 +263,8 @@ const styles = StyleSheet.create({
   submitButton: {
     padding: 10,
     borderRadius: 2,
+    width: 75,
+    textAlign: "center"
   },
   buttonContainer: {
     flexDirection: 'row',

@@ -33,7 +33,6 @@ class RandomCardView(RetrieveUpdateAPIView):
 
     def put(self, request):
         user = request.user
-
         if user.is_anonymous:
             return Response(self.get_random_card_for_anonymous(), status=status.HTTP_200_OK)
 
